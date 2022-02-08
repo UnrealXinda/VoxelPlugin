@@ -44,10 +44,10 @@ public:
 	virtual bool CanExecuteOnTarget(ENiagaraSimTarget Target) const override { return Target == ENiagaraSimTarget::CPUSim; }
 	//UNiagaraDataInterface Interface End
 
-	static void GetAssetValue(FVectorVMContext& Context);
-	static void GetAssetColor(FVectorVMContext& Context);
-	static void GetPositionFromAsset(FVectorVMContext& Context);
-	static void GetNumVoxels(FVectorVMContext& Context);
+	static void GetAssetValue(FVectorVMExternalFunctionContext& Context);
+	static void GetAssetColor(FVectorVMExternalFunctionContext& Context);
+	static void GetPositionFromAsset(FVectorVMExternalFunctionContext& Context);
+	static void GetNumVoxels(FVectorVMExternalFunctionContext& Context);
 
 	virtual bool Equals(const UNiagaraDataInterface* Other) const override;
 protected:

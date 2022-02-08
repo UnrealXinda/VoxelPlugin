@@ -16,11 +16,11 @@ void UVoxelErosion::Initialize()
 		FVoxelMessages::Error("Erosion is already initialized!");
 		return;
 	}
-	
+
 	RealSize = FMath::Max(32, FMath::CeilToInt(Size / 32.f) * 32);;
-	
+
 	ENQUEUE_RENDER_COMMAND(Step)(
-		[ThisPtr = this](FRHICommandList& RHICmdList) 
+		[ThisPtr = this](FRHICommandList& RHICmdList)
 	{
 		ThisPtr->Init_RenderThread();
 	});
@@ -43,7 +43,7 @@ void UVoxelErosion::Initialize()
 				RealSize),
 			this);
 	}
-	
+
 	if (HeightmapInit->GetSizeX() == RealSize &&
 		HeightmapInit->GetSizeY() == RealSize)
 	{
@@ -76,7 +76,7 @@ void UVoxelErosion::Step(int32 Count)
 		FVoxelMessages::Error("Erosion is not initialized!");
 		return;
 	}
-	
+
 	FVoxelErosionParameters Parameters;
 	Parameters.size = RealSize;
 	Parameters.dt = DeltaTime;
@@ -92,7 +92,7 @@ void UVoxelErosion::Step(int32 Count)
 	Parameters.Ke = Evaporation;
 
 	ENQUEUE_RENDER_COMMAND(Step)(
-		[Parameters, Count, ThisPtr = this](FRHICommandList& RHICmdList) 
+		[Parameters, Count, ThisPtr = this](FRHICommandList& RHICmdList)
 	{
 		ThisPtr->Step_RenderThread(Parameters, Count);
 	});
@@ -105,7 +105,7 @@ FVoxelFloatTexture UVoxelErosion::GetTerrainHeightTexture()
 		FVoxelMessages::Error("Erosion is not initialized!");
 		return {};
 	}
-	
+
 	auto Texture = MakeVoxelShared<TVoxelTexture<float>::FTextureData>();
 	CopyRHIToTexture(TerrainHeight, Texture);
 	return { TVoxelTexture<float>(Texture) };
@@ -119,7 +119,7 @@ FVoxelFloatTexture UVoxelErosion::GetWaterHeightTexture()
 		FVoxelMessages::Error("Erosion is not initialized!");
 		return {};
 	}
-	
+
 	auto Texture = MakeVoxelShared<TVoxelTexture<float>::FTextureData>();
 	CopyRHIToTexture(WaterHeight, Texture);
 	return { TVoxelTexture<float>(Texture) };
@@ -133,7 +133,7 @@ FVoxelFloatTexture UVoxelErosion::GetSedimentTexture()
 		FVoxelMessages::Error("Erosion is not initialized!");
 		return {};
 	}
-	
+
 	auto Texture = MakeVoxelShared<TVoxelTexture<float>::FTextureData>();
 	CopyRHIToTexture(Sediment, Texture);
 	return { TVoxelTexture<float>(Texture) };
@@ -143,24 +143,24 @@ template<typename T>
 void UVoxelErosion::RunShader(const FVoxelErosionParameters& Parameters)
 {
 	FRHICommandListImmediate& RHICmdList = GRHICommandList.GetImmediateCommandList();
-	
+
 	TShaderMapRef<T> ComputeShader(GetGlobalShaderMap(ERHIFeatureLevel::SM5));
 	RHICmdList.SetComputeShader(UE_25_SWITCH(ComputeShader->GetComputeShader(), ComputeShader.GetComputeShader()));
 
 	ComputeShader->SetSurfaces(
-		RHICmdList, 
-		RainMapUAV, 
-		TerrainHeightUAV, 
-		TerrainHeight1UAV, 
-		WaterHeightUAV, 
-		WaterHeight1UAV, 
-		WaterHeight2UAV, 
-		SedimentUAV, 
-		Sediment1UAV, 
-		OutflowUAV, 
+		RHICmdList,
+		RainMapUAV,
+		TerrainHeightUAV,
+		TerrainHeight1UAV,
+		WaterHeightUAV,
+		WaterHeight1UAV,
+		WaterHeight2UAV,
+		SedimentUAV,
+		Sediment1UAV,
+		OutflowUAV,
 		VelocityUAV);
 	ComputeShader->SetUniformBuffers(RHICmdList, Parameters);
-	
+
 	RHICmdList.DispatchComputeShader(RealSize / VOXEL_EROSION_NUM_THREADS_CS, RealSize / VOXEL_EROSION_NUM_THREADS_CS, 1);
 
 	ComputeShader->UnbindBuffers(RHICmdList);
@@ -173,7 +173,7 @@ void UVoxelErosion::CopyTextureToRHI(const TVoxelTexture<float>& Texture, const 
 		ThisPtr->CopyTextureToRHI_RenderThread(Texture, RHITexture);
 	});
 
-	FlushRenderingCommands(false);
+	FlushRenderingCommands();
 }
 
 void UVoxelErosion::CopyRHIToTexture(const FTexture2DRHIRef& RHITexture, TVoxelSharedRef<TVoxelTexture<float>::FTextureData>& Texture)
@@ -184,7 +184,7 @@ void UVoxelErosion::CopyRHIToTexture(const FTexture2DRHIRef& RHITexture, TVoxelS
 		ThisPtr->CopyRHIToTexture_RenderThread(RHITexture, *Texture);
 	});
 
-	FlushRenderingCommands(false);
+	FlushRenderingCommands();
 }
 
 void UVoxelErosion::CopyTextureToRHI_RenderThread(const TVoxelTexture<float>& Texture, const FTexture2DRHIRef& RHITexture)
@@ -220,7 +220,7 @@ void UVoxelErosion::CopyRHIToTexture_RenderThread(const FTexture2DRHIRef& RHITex
 	if (!ensureAlways(RHIData)) return;
 
 	Texture.SetSize(Size, Size);
-	
+
 	for (int32 Index = 0; Index < Size * Size; Index++)
 	{
 		Texture.SetValue(Index, RHIData[Index]);

@@ -15,9 +15,9 @@ void SVoxelGraphPreview::Construct(const FArguments& Args)
 {
 	PreviewSettings = Args._PreviewSettings;
 	check(PreviewSettings.IsValid());
-	
+
 	TextureBrush.DrawAs = ESlateBrushDrawType::NoDrawType;
-	
+
 	ChildSlot
 	[
 		SNew(SBox)
@@ -39,7 +39,7 @@ void SVoxelGraphPreview::Construct(const FArguments& Args)
 void SVoxelGraphPreview::SetTexture(UTexture2D* Texture)
 {
 	check(Texture);
-	
+
 	Texture->Filter = TextureFilter::TF_Nearest;
 
 	TextureBrush.SetResourceObject(Texture);
@@ -56,7 +56,7 @@ void SVoxelGraphPreview::SetDebugData(const UVoxelPlaceableItemManager* Manager)
 		DebugPoints.Reset();
 		return;
 	}
-	
+
 	const FVoxelGraphPreviewSettingsWrapper Wrapper(*PreviewSettings);
 
 	const auto GetScreenPosition = [&](const FVector& Point)
@@ -65,7 +65,7 @@ void SVoxelGraphPreview::SetDebugData(const UVoxelPlaceableItemManager* Manager)
 		ScreenPoint.Y = Size - ScreenPoint.Y;
 		return ScreenPoint;
 	};
-	
+
 	DebugLines.Reset(Manager->GetDebugLines().Num());
 	for (auto& Line : Manager->GetDebugLines())
 	{
@@ -74,7 +74,7 @@ void SVoxelGraphPreview::SetDebugData(const UVoxelPlaceableItemManager* Manager)
 			GetScreenPosition(Line.End),
 			Line.Color });
 	}
-	
+
 	DebugPoints.Reset(Manager->GetDebugPoints().Num());
 	for (auto& Point : Manager->GetDebugPoints())
 	{
@@ -120,18 +120,18 @@ FReply SVoxelGraphPreview::OnMouseButtonDown(const FGeometry& MyGeometry, const 
 		const FVector2D RelativePosition = LocalClickPosition / Size;
 
 		const FVoxelGraphPreviewSettingsWrapper Wrapper(*PreviewSettings);
-		PreviewSettings->PreviewedVoxel = Wrapper.Start + FVoxelUtilities::RoundToInt(Wrapper.GetRelativePosition(RelativePosition.X, 1 - RelativePosition.Y) * FVector(Wrapper.Size * Wrapper.Step));
+		PreviewSettings->PreviewedVoxel = Wrapper.Start + FVoxelUtilities::RoundToInt(Wrapper.GetRelativePosition(StaticCast<float>(RelativePosition.X), StaticCast<float>(1 - RelativePosition.Y)) * FVector(Wrapper.Size * Wrapper.Step));
 
 		if (!PreviewSettings->bShowStats && !PreviewSettings->bShowValues)
 		{
 			// Make sure one of them is toggled if we click the preview
 			PreviewSettings->bShowValues = true;
 		}
-		
+
 		FPropertyChangedEvent PropertyChangedEvent(UVoxelGraphPreviewSettings::StaticClass()->FindPropertyByName(GET_MEMBER_NAME_CHECKED(UVoxelGraphPreviewSettings, PreviewedVoxel)));
 		PreviewSettings->PostEditChangeProperty(PropertyChangedEvent);
 	}
-	
+
 	return FReply::Unhandled();
 }
 
@@ -145,9 +145,9 @@ FReply SVoxelGraphPreview::OnMouseButtonUp(const FGeometry& MyGeometry, const FP
 		}
 
 		const FVector2D RelativePosition = Position / Size;
-		
+
 		const FVoxelGraphPreviewSettingsWrapper Wrapper(*PreviewSettings);
-		PreviewSettings->Center -= FVoxelUtilities::RoundToInt(Wrapper.GetRelativePosition(RelativePosition.X, -RelativePosition.Y) * FVector(Wrapper.Size * Wrapper.Step));
+		PreviewSettings->Center -= FVoxelUtilities::RoundToInt(Wrapper.GetRelativePosition(StaticCast<float>(RelativePosition.X), StaticCast<float>(-RelativePosition.Y)) * FVector(Wrapper.Size * Wrapper.Step));
 
 		FPropertyChangedEvent PropertyChangedEvent(UVoxelGraphPreviewSettings::StaticClass()->FindPropertyByName(GET_MEMBER_NAME_CHECKED(UVoxelGraphPreviewSettings, Center)));
 		PreviewSettings->PostEditChangeProperty(PropertyChangedEvent);
@@ -156,7 +156,7 @@ FReply SVoxelGraphPreview::OnMouseButtonUp(const FGeometry& MyGeometry, const FP
 
 		return FReply::Handled();
 	}
-	
+
 	return FReply::Unhandled();
 }
 
@@ -175,7 +175,7 @@ int32 SVoxelGraphPreview::OnPaint(
 	bool bParentEnabled) const
 {
 	VOXEL_FUNCTION_COUNTER();
-	
+
 	LayerId = SCompoundWidget::OnPaint(Args, AllottedGeometry, MyCullingRect, OutDrawElements, LayerId, InWidgetStyle, bParentEnabled);
 	LayerId++;
 
@@ -189,12 +189,12 @@ int32 SVoxelGraphPreview::OnPaint(
 		Points[0] = Position + Line.Start;
 		Points[1] = Position + Line.End;
 
-		if (!MyCullingRect.ContainsPoint(GetCachedGeometry().LocalToAbsolute(Points[0])) && 
+		if (!MyCullingRect.ContainsPoint(GetCachedGeometry().LocalToAbsolute(Points[0])) &&
 			!MyCullingRect.ContainsPoint(GetCachedGeometry().LocalToAbsolute(Points[1])))
 		{
 			continue;
 		}
-		
+
 		FSlateDrawElement::MakeLines(
 			OutDrawElements,
 			LayerId,
@@ -203,7 +203,7 @@ int32 SVoxelGraphPreview::OnPaint(
 			ESlateDrawEffect::None,
 			Line.Color);
 	}
-	
+
 	FSlateColorBrush Brush(FLinearColor::White);
 	for (auto& Point : DebugPoints)
 	{
@@ -216,5 +216,5 @@ int32 SVoxelGraphPreview::OnPaint(
 			Point.Color);
 	}
 
-	return LayerId;	
+	return LayerId;
 }

@@ -24,7 +24,7 @@ public:
 		static TSet<FMaterialCompiler*> Set;
 		return Set;
 	}
-	
+
 	FVoxelMaterialCompiler(FMaterialCompiler* InCompiler)
 		: FProxyMaterialCompiler(InCompiler)
 	{
@@ -62,8 +62,8 @@ public:
 			if (WeightmapIndex >= 0)
 			{
 				VoxelIndices.Add(WeightmapIndex);
-				
-				if (Parameter.ParameterInfo.Name == ParameterName)
+
+				if (Parameter.ParameterInfo_DEPRECATED.Name == ParameterName)
 				{
 					ParameterVoxelIndex = WeightmapIndex;
 				}
@@ -81,7 +81,7 @@ public:
 			// No support for visibility mask
 			return INDEX_NONE;
 		}
-		
+
 		if (!ensure(ParameterVoxelIndex != -1))
 		{
 			// We should have all the parameters overriden
@@ -104,7 +104,7 @@ public:
 
 		const int32 NumBlends = VoxelIndices.Num();
 		ensure(NumBlends > 0 && NumBlends <= 6);
-		
+
 		const int32 R = ComponentMask(VertexColor(), true, false, false, false);
 		const int32 G = ComponentMask(VertexColor(), false, true, false, false);
 		const int32 B = ComponentMask(VertexColor(), false, false, true, false);
@@ -125,7 +125,7 @@ public:
 		if (NumBlends > 3) Output = Lerp(Output, Inputs[3], B);
 		if (NumBlends > 4) Output = Lerp(Output, Inputs[4], U);
 		if (NumBlends > 5) Output = Lerp(Output, Inputs[5], V);
-		
+
 		return Output;
 	}
 
@@ -168,14 +168,14 @@ public:
 	}
 
 #if VOXEL_ENGINE_VERSION >= 426
-	virtual int32 PreSkinVertexOffset() override
-	{
-		return Compiler->PreSkinVertexOffset();
-	}
-	virtual int32 PostSkinVertexOffset() override
-	{
-		return Compiler->PostSkinVertexOffset();
-	}
+	// virtual int32 PreSkinVertexOffset() override
+	// {
+	// 	return Compiler->PreSkinVertexOffset();
+	// }
+	// virtual int32 PostSkinVertexOffset() override
+	// {
+	// 	return Compiler->PostSkinVertexOffset();
+	// }
 #endif
 };
 
@@ -221,7 +221,7 @@ bool NeedsToBeConvertedToVoxelImp(const TArray<UMaterialExpression*>& Expression
 			}
 		}
 	}
-	
+
 	return false;
 }
 

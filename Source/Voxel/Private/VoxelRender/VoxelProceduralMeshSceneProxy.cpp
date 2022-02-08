@@ -78,7 +78,7 @@ FVoxelProcMeshBuffersRenderData::FVoxelProcMeshBuffersRenderData(
 
 	auto& VertexBuffers = Buffers->VertexBuffers;
 	auto& IndexBuffer = Buffers->IndexBuffer;
-	
+
 	FLocalVertexFactory::FDataType Data;
 	VertexBuffers.PositionVertexBuffer.BindPositionVertexBuffer(&VertexFactory, Data);
 	VertexBuffers.StaticMeshVertexBuffer.BindTangentVertexBuffer(&VertexFactory, Data);
@@ -136,7 +136,7 @@ FVoxelProcMeshBuffersRenderData::~FVoxelProcMeshBuffersRenderData()
 	InitBuffers.IndexBuffer.ReleaseResource();
 	InitBuffers.AdjacencyIndexBuffer.ReleaseResource();
 	VertexFactory.ReleaseResource();
-		
+
 #if RHI_RAYTRACING
 	if (IsRayTracingEnabled())
 	{
@@ -170,7 +170,7 @@ FVoxelProceduralMeshSceneProxy::FVoxelProceduralMeshSceneProxy(UVoxelProceduralM
 	, CollisionTraceFlag(Component->CollisionTraceFlag)
 {
 	VOXEL_FUNCTION_COUNTER();
-	
+
 	// Proxy settings
 #if VOXEL_ENGINE_VERSION < 500
 	bSupportsDistanceFieldRepresentation = true;
@@ -225,7 +225,7 @@ FVoxelProceduralMeshSceneProxy::FVoxelProceduralMeshSceneProxy(UVoxelProceduralM
 		check(
 			AdjacencyIndexBuffer.GetNumIndices() == 0 ||
 			AdjacencyIndexBuffer.GetNumIndices() == 4 * IndexBuffer.GetNumIndices());
-		
+
 #if VOXEL_ENGINE_VERSION < 500
 		const bool bTessellatedMaterial =
 			RequiresAdjacencyInformation(
@@ -268,7 +268,7 @@ void FVoxelProceduralMeshSceneProxy::CreateRenderThreadResources()
 {
 	VOXEL_RENDER_FUNCTION_COUNTER();
 	check(IsInRenderingThread());
-	
+
 	for (auto& Section : Sections)
 	{
 		check(!Section.RenderData.IsValid());
@@ -278,7 +278,7 @@ void FVoxelProceduralMeshSceneProxy::CreateRenderThreadResources()
 			Section.RenderData = FVoxelProcMeshBuffersRenderData::GetRenderData(Section.Buffers.ToSharedRef(), GetScene().GetFeatureLevel());
 		}
 	}
-	
+
 #if VOXEL_ENGINE_VERSION < 500
 	if (DistanceFieldData.IsValid())
 	{
@@ -292,12 +292,12 @@ void FVoxelProceduralMeshSceneProxy::DestroyRenderThreadResources()
 {
 	VOXEL_RENDER_FUNCTION_COUNTER();
 	check(IsInRenderingThread());
-	
+
 	for (auto& Section : Sections)
 	{
 		Section.RenderData.Reset();
 	}
-	
+
 #if VOXEL_ENGINE_VERSION < 500
 	if (DistanceFieldData.IsValid())
 	{
@@ -330,7 +330,7 @@ void FVoxelProceduralMeshSceneProxy::DrawStaticElements(FStaticPrimitiveDrawInte
 			// Will happen in force delete
 			continue;
 		}
-		
+
 		auto* MaterialProxy = Material->GetRenderProxy();
 
 		FMeshBatch MeshBatch;
@@ -369,7 +369,7 @@ void FVoxelProceduralMeshSceneProxy::GetDynamicMeshElements(const TArray<const F
 	VOXEL_RENDER_FUNCTION_COUNTER();
 
 	const auto& EngineShowFlags = ViewFamily.EngineShowFlags;
-	
+
 #if NOT_SHIPPING_NOR_TEST
 	// Hack to see the delay between update call and actual mesh render update
 	if (!bLoggedTime && CVarLogProcMeshDelays.GetValueOnRenderThread() != 0 && FinishSectionsUpdatesTime > 0)
@@ -411,7 +411,7 @@ void FVoxelProceduralMeshSceneProxy::GetDynamicMeshElements(const TArray<const F
 			}
 		}
 	}
-	
+
 	if (IsCollisionView(EngineShowFlags))
 	{
 		if (ShouldDrawComplexCollisions(EngineShowFlags))
@@ -420,7 +420,7 @@ void FVoxelProceduralMeshSceneProxy::GetDynamicMeshElements(const TArray<const F
 			for (auto& Section : Sections)
 			{
 				if (!Section.bEnableCollisions_Debug) continue;
-				
+
 				const FColor ComplexCollisionColor = FColor(0, 255, 255, 255);
 				auto* MaterialProxy = new FColoredMaterialRenderProxy(GEngine->ShadedLevelColorationUnlitMaterial->GetRenderProxy(), ComplexCollisionColor);
 				Collector.RegisterOneFrameMaterialProxy(MaterialProxy);
@@ -428,7 +428,7 @@ void FVoxelProceduralMeshSceneProxy::GetDynamicMeshElements(const TArray<const F
 				for (int32 ViewIndex = 0; ViewIndex < Views.Num(); ViewIndex++)
 				{
 					if (!(VisibilityMap & (1 << ViewIndex))) continue;
-					
+
 					FMeshBatch& Mesh = Collector.AllocateMesh();
 					DrawSection(Mesh, Section, MaterialProxy, false, EngineShowFlags.Wireframe);
 					Collector.AddMesh(ViewIndex, Mesh);
@@ -442,7 +442,7 @@ void FVoxelProceduralMeshSceneProxy::GetDynamicMeshElements(const TArray<const F
 		for (auto& Section : Sections)
 		{
 			if (!Section.RenderData.IsValid()) continue;
-			
+
 			const auto ParentMaterial =
 				EngineShowFlags.Wireframe
 				? GEngine->WireframeMaterial
@@ -451,7 +451,7 @@ void FVoxelProceduralMeshSceneProxy::GetDynamicMeshElements(const TArray<const F
 			const auto Color = FVoxelDebugManager::GetCollisionAndNavmeshDebugColor(Section.bEnableCollisions_Debug, Section.bEnableNavmesh_Debug);
 
 			if (!ensure(ParentMaterial)) return; // Happens in packaged games
-			
+
 			auto* MaterialProxy = new FColoredMaterialRenderProxy(ParentMaterial->GetRenderProxy(), Color);
 			Collector.RegisterOneFrameMaterialProxy(MaterialProxy);
 
@@ -474,7 +474,7 @@ void FVoxelProceduralMeshSceneProxy::GetDynamicMeshElements(const TArray<const F
 		for (const auto& Section : Sections)
 		{
 			VOXEL_SLOW_SCOPE_COUNTER("Render Section");
-			
+
 			if (!Section.bSectionVisible)
 			{
 				continue;
@@ -486,14 +486,14 @@ void FVoxelProceduralMeshSceneProxy::GetDynamicMeshElements(const TArray<const F
 				// Will happen in force delete
 				continue;
 			}
-			
+
 			auto* MaterialProxy = Material->GetRenderProxy();
 
 			bool bUseStaticPathThisFrame = bUseStaticPath && !IsRichView(ViewFamily);
 			if (CVarShowMeshSections.GetValueOnRenderThread() != 0)
 			{
 				bUseStaticPathThisFrame = false;
-				
+
 				uint32 Hash = 0;
 				for (auto& Guid : Section.Buffers->Guids)
 				{
@@ -507,7 +507,7 @@ void FVoxelProceduralMeshSceneProxy::GetDynamicMeshElements(const TArray<const F
 			{
 				continue;
 			}
-			
+
 			for (int32 ViewIndex = 0; ViewIndex < Views.Num(); ViewIndex++)
 			{
 				if (!(VisibilityMap & (1 << ViewIndex))) continue;
@@ -524,7 +524,7 @@ void FVoxelProceduralMeshSceneProxy::GetDynamicMeshElements(const TArray<const F
 				INC_DWORD_STAT_BY(STAT_NumVoxelTrianglesDrawn, Section.Buffers->GetNumIndices() / 3);
 			}
 		}
-		
+
 		const auto ToolRenderingManager = WeakToolRenderingManager.Pin();
 		if (ToolRenderingManager.IsValid())
 		{
@@ -567,7 +567,7 @@ void FVoxelProceduralMeshSceneProxy::GetDynamicMeshElements(const TArray<const F
 					MaterialProxy = new FColoredMaterialRenderProxy(GEngine->LevelColorationUnlitMaterial->GetRenderProxy(), FColor::Red);
 					Collector.RegisterOneFrameMaterialProxy(MaterialProxy);
 				}
-				
+
 				for (const auto& Section : Sections)
 				{
 					if (!Section.bSectionVisible) continue;
@@ -622,7 +622,7 @@ void FVoxelProceduralMeshSceneProxy::GetDynamicRayTracingInstances(FRayTracingMa
 
 				FMeshBatchElement& BatchElement = MeshBatch.Elements[0];
 				BatchElement.IndexBuffer = &Section.Buffers->IndexBuffer;
-				
+
 				BatchElement.FirstIndex = 0;
 				BatchElement.NumPrimitives = Section.Buffers->IndexBuffer.GetNumIndices() / 3;
 				BatchElement.MinVertexIndex = 0;
@@ -630,7 +630,7 @@ void FVoxelProceduralMeshSceneProxy::GetDynamicRayTracingInstances(FRayTracingMa
 
 				RayTracingInstance.Materials.Add(MeshBatch);
 
-				RayTracingInstance.BuildInstanceMaskAndFlags();
+				RayTracingInstance.BuildInstanceMaskAndFlags(ERHIFeatureLevel::SM5);
 				OutRayTracingInstances.Add(RayTracingInstance);
 			}
 		}
@@ -652,7 +652,7 @@ FPrimitiveViewRelevance FVoxelProceduralMeshSceneProxy::GetViewRelevance(const F
 
 	if (bUseStaticPath &&
 		!IsRichView(*View->Family) &&
-		!FVoxelDebugManager::ShowCollisionAndNavmeshDebug() && 
+		!FVoxelDebugManager::ShowCollisionAndNavmeshDebug() &&
 		CVarShowMeshSections.GetValueOnRenderThread() == 0)
 	{
 		Result.bStaticRelevance = true;
@@ -661,16 +661,16 @@ FPrimitiveViewRelevance FVoxelProceduralMeshSceneProxy::GetViewRelevance(const F
 	{
 		Result.bStaticRelevance = false;
 	}
-	
+
 	Result.bDynamicRelevance = true;
-	
+
 	Result.bRenderInMainPass = ShouldRenderInMainPass();
 	Result.bUsesLightingChannels = GetLightingChannelMask() != GetDefaultLightingChannelMask();
 	Result.bRenderCustomDepth = ShouldRenderCustomDepth();
 	Result.bTranslucentSelfShadow = bCastVolumetricTranslucentShadow;
 	MaterialRelevance.SetPrimitiveViewRelevance(Result);
 	Result.bVelocityRelevance = IsMovable() && Result.UE_25_SWITCH(bOpaqueRelevance, bOpaque) && Result.bRenderInMainPass;
-	
+
 	return Result;
 }
 
@@ -701,12 +701,12 @@ uint32 FVoxelProceduralMeshSceneProxy::GetAllocatedSize() const
 
 #if VOXEL_ENGINE_VERSION < 500
 void FVoxelProceduralMeshSceneProxy::GetDistancefieldAtlasData(
-	FBox& LocalVolumeBounds, 
-	FVector2D& OutDistanceMinMax, 
-	FIntVector& OutBlockMin, 
-	FIntVector& OutBlockSize, 
-	bool& bOutBuiltAsIfTwoSided, 
-	bool& bMeshWasPlane, 
+	FBox& LocalVolumeBounds,
+	FVector2D& OutDistanceMinMax,
+	FIntVector& OutBlockMin,
+	FIntVector& OutBlockSize,
+	bool& bOutBuiltAsIfTwoSided,
+	bool& bMeshWasPlane,
 	float& SelfShadowBias,
 	TArray<FMatrix>& ObjectLocalToWorldTransforms,
 	bool& bOutThrottled) const
@@ -771,7 +771,7 @@ void FVoxelProceduralMeshSceneProxy::DrawSection(
 	bool bWireframe) const
 {
 	VOXEL_ASYNC_FUNCTION_COUNTER();
-	
+
 	check(MaterialRenderProxy);
 	check(Section.RenderData.IsValid());
 

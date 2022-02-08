@@ -33,7 +33,7 @@ bool FVoxelAsyncPhysicsCooker_Chaos::Finalize(
 	{
 		TriMesh->SetDoCollide(false);
 	}
-	
+
 	BodySetup.ChaosTriMeshes = MoveTemp(TriMeshes);
 	BodySetup.bCreatedPhysicsMeshes = true;
 
@@ -59,7 +59,7 @@ void FVoxelAsyncPhysicsCooker_Chaos::CookMesh()
 void FVoxelAsyncPhysicsCooker_Chaos::CreateTriMesh()
 {
 	VOXEL_ASYNC_FUNCTION_COUNTER();
-				
+
 	int32 NumIndices = 0;
 	int32 NumVertices = 0;
 	for (auto& Buffer : Buffers)
@@ -70,7 +70,7 @@ void FVoxelAsyncPhysicsCooker_Chaos::CreateTriMesh()
 
 	const auto Process = [&](auto& Triangles)
 	{
-		Chaos::TParticles<Chaos::FReal, 3> Particles;
+		Chaos::TParticles<Chaos::FRealSingle, 3> Particles;
 
 		{
 			VOXEL_ASYNC_SCOPE_COUNTER("Copy data from buffers");
@@ -92,7 +92,7 @@ void FVoxelAsyncPhysicsCooker_Chaos::CreateTriMesh()
 
 				{
 					VOXEL_ASYNC_SCOPE_COUNTER("Copy vertices");
-					
+
 					auto& PositionBuffer = Buffer.VertexBuffers.PositionVertexBuffer;
 					for (uint32 Index = 0; Index < PositionBuffer.GetNumVertices(); Index++)
 					{
@@ -102,7 +102,7 @@ void FVoxelAsyncPhysicsCooker_Chaos::CreateTriMesh()
 
 				{
 					VOXEL_ASYNC_SCOPE_COUNTER("Copy triangles");
-					
+
 					auto& IndexBuffer = Buffer.IndexBuffer;
 
 					ensure(IndexBuffer.GetNumIndices() % 3 == 0);
@@ -145,11 +145,11 @@ void FVoxelAsyncPhysicsCooker_Chaos::CreateTriMesh()
 		}
 
 		TArray<uint16> MaterialIndices;
-		
+
 		VOXEL_ASYNC_SCOPE_COUNTER("Build Tri Mesh");
 		TriMeshes.Emplace(new Chaos::FTriangleMeshImplicitObject(MoveTemp(Particles), MoveTemp(Triangles), MoveTemp(MaterialIndices)));
 	};
-	
+
 	if (NumVertices < TNumericLimits<uint16>::Max())
 	{
 		TArray<Chaos::TVector<uint16, 3>> TrianglesSmallIdx;

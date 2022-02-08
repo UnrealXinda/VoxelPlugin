@@ -16,7 +16,7 @@ namespace FVoxelUtilities
 	FORCEINLINE int32 GetDepthFromSize(uint32 ChunkSize, uint32 Size)
 	{
 		CHECK_CHUNK_SIZE();
-		
+
 		if (Size <= 0)
 		{
 			return 0;
@@ -34,7 +34,7 @@ namespace FVoxelUtilities
 			}
 		}
 	}
-	
+
 	FORCEINLINE constexpr uint32 GetSizeFromDepth(uint32 ChunkSize, int32 Depth)
 	{
 		CHECK_CHUNK_SIZE();
@@ -47,7 +47,7 @@ namespace FVoxelUtilities
 		const FIntVector Size = FIntVector((ChunkSize << Depth) / 2);
 		return FVoxelIntBox(-Size, Size);
 	}
-	
+
 	FORCEINLINE FVoxelIntBox GetCustomBoundsForDepth(uint32 ChunkSize, FVoxelIntBox Bounds, int32 Depth)
 	{
 		CHECK_CHUNK_SIZE();
@@ -75,7 +75,7 @@ namespace FVoxelUtilities
 	{
 		checkfVoxelSlow(IsPowerOfTwo(FromChunkSize), TEXT("FromChunkSize must be a power of 2"));
 		checkfVoxelSlow(IsPowerOfTwo(ToChunkSize), TEXT("ToChunkSize must be a power of 2"));
-		
+
 		if (FromChunkSize == ToChunkSize)
 		{
 			return Depth;
@@ -117,7 +117,7 @@ namespace FVoxelUtilities
 		ChunkSize = FMath::RoundUpToPowerOfTwo(ChunkSize);
 	}
 #undef CHECK_CHUNK_SIZE
-	
+
 	template<typename T>
 	inline T MergeAsset(T A, T B, bool bSubtractiveAsset)
 	{
@@ -135,7 +135,7 @@ namespace FVoxelUtilities
 
 		const v_flt SidesSDF = DistanceToCenterXY - InternalRadius;
 		const v_flt TopSDF = DistanceToCenterZ - Height / 2 + ExternalRadius;
-		
+
 		return
 			FMath::Min<v_flt>(FMath::Max<v_flt>(SidesSDF, TopSDF), 0.0f) +
 			FVector2D(FMath::Max<v_flt>(SidesSDF, 0.f), FMath::Max<v_flt>(TopSDF, 0.f)).Size() +
@@ -150,7 +150,7 @@ namespace FVoxelUtilities
 	FORCEINLINE void XWayBlend_AlphasToStrengths_Impl(int32 NumChannels, const TIn& Alphas, TOut& Strengths)
 	{
 		ensureVoxelSlow(NumChannels > 1);
-		
+
 		// Unpack the strengths from the lerp values
 		for (int32 Index = 0; Index < NumChannels; Index++)
 		{
@@ -175,7 +175,7 @@ namespace FVoxelUtilities
 	FORCEINLINE void XWayBlend_StrengthsToAlphas_Impl(int32 NumChannels, TIn Strengths, TOut& Alphas, uint32 ChannelsToKeepIntact = 0)
 	{
 		ensureVoxelSlow(NumChannels > 1);
-		
+
 		if (!ChannelsToKeepIntact)
 		{
 			// Normalize: we want the sum to be 1
@@ -224,14 +224,14 @@ namespace FVoxelUtilities
 					}
 					SumToKeepIntact = 1.f;
 				}
-				
+
 				// We need to split this into the other channels.
 				const float SumToSplit = 1.f - SumToKeepIntact;
 				if (SumToChange == 0.f)
 				{
 					// If the sum is 0, increase all the other channels the same way
 					const float Value = SumToSplit / (NumChannels - FMath::CountBits(ChannelsToKeepIntact));
-					
+
 					for (int32 Index = 0; Index < NumChannels; Index++)
 					{
 						if (!((1u << Index) & ChannelsToKeepIntact))
@@ -244,7 +244,7 @@ namespace FVoxelUtilities
 				{
 					// Else scale them
 					const float Value = SumToSplit / SumToChange;
-					
+
 					for (int32 Index = 0; Index < NumChannels; Index++)
 					{
 						if (!((1u << Index) & ChannelsToKeepIntact))
@@ -271,7 +271,7 @@ namespace FVoxelUtilities
 			ensureVoxelSlowNoSideEffects(Y != 0.f || FMath::IsNearlyZero(X));
 			return Y == 0.f ? 0.f : X / Y;
 		};
-		
+
 		// Pack them back in: do the maths in reverse order
 		const int32 NumAlphas = NumChannels - 1;
 		for (int32 AlphaIndex = NumAlphas - 1; AlphaIndex >= 0; AlphaIndex--)
@@ -283,7 +283,7 @@ namespace FVoxelUtilities
 			}
 
 			Alphas[AlphaIndex] = SafeDivide(Strengths[AlphaIndex + 1], Divisor);
-			
+
 		}
 	}
 
@@ -338,7 +338,7 @@ namespace FVoxelUtilities
 	//////////////////////////////////////////////////////////////////////////////
 	//////////////////////////////////////////////////////////////////////////////
 	//////////////////////////////////////////////////////////////////////////////
-	
+
 	template<int32 N, typename T, typename ArrayType, typename TLambda>
 	FORCEINLINE TVoxelStaticArray<TTuple<int32, T>, N> FindTopXElements_Impl(const ArrayType& Array, TLambda LessThan = TLess<T>())
 	{
@@ -413,7 +413,7 @@ namespace FVoxelUtilities
 	{
 		return Get(Array, Index);
 	}
-	
+
 	FORCEINLINE int32 Get3DIndex(const FIntVector& Size, int32 X, int32 Y, int32 Z, const FIntVector& Offset = FIntVector(0, 0, 0))
 	{
 		X -= Offset.X;
@@ -429,7 +429,7 @@ namespace FVoxelUtilities
 	{
 		return Get3DIndex(Size, Position.X, Position.Y, Position.Z, Offset);
 	}
-	
+
 	template<typename T>
 	FORCEINLINE T& Get3D(T* RESTRICT Array, const FIntVector& Size, int32 X, int32 Y, int32 Z, const FIntVector& Offset = FIntVector(0, 0, 0))
 	{
@@ -440,7 +440,7 @@ namespace FVoxelUtilities
 	{
 		return Get3D(Array, Size, Position.X, Position.Y, Position.Z, Offset);
 	}
-	
+
 	template<typename T>
 	FORCEINLINE auto& Get3D(T& Array, const FIntVector& Size, int32 X, int32 Y, int32 Z, const FIntVector& Offset = FIntVector(0, 0, 0))
 	{
@@ -452,7 +452,7 @@ namespace FVoxelUtilities
 	{
 		return Get3D(Array, Size, Position.X, Position.Y, Position.Z, Offset);
 	}
-	
+
 	template<typename T>
 	FORCEINLINE auto Create3DGetter(T& Array, const FIntVector& Size, const FIntVector& Offset = FIntVector(0, 0, 0)) -> decltype(auto)
 	{
@@ -474,7 +474,7 @@ namespace FVoxelUtilities
 	FORCEINLINE float SmoothFalloff(float Distance, float Radius, float Falloff)
 	{
 		const float X = LinearFalloff(Distance, Radius, Falloff);
-		return FMath::SmoothStep(0, 1, X);
+		return FMath::SmoothStep<float>(0, 1, X);
 	}
 	FORCEINLINE float SphericalFalloff(float Distance, float Radius, float Falloff)
 	{
@@ -502,7 +502,7 @@ namespace FVoxelUtilities
 		{
 			return Lambda([&](float Distance) { return 1.f; });
 		}
-		
+
 		const float RelativeRadius = Radius * (1.f - Falloff);
 		const float RelativeFalloff = Radius * Falloff;
 		switch (FalloffType)

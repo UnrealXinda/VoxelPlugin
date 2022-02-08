@@ -61,22 +61,6 @@
 			]
 		},
 		{
-			"Name": "VoxelVDB",
-			"Type": "Editor",
-			"LoadingPhase": "Default",
-			"WhitelistPlatforms": [
-				"Win64"
-			]
-		},
-		{
-			"Name": "VoxelVDBEditor",
-			"Type": "Editor",
-			"LoadingPhase": "Default",
-			"WhitelistPlatforms": [
-				"Win64"
-			]
-		},
-		{
 			"Name": "VoxelNiagara",
 			"Type": "Runtime",
 			"LoadingPhase": "Default",

@@ -100,7 +100,7 @@ void UVoxelGraphNode::RemoveInputPin(UEdGraphPin* InGraphPin)
 	{
 		if (InGraphPin == InputPin)
 		{
-			InGraphPin->MarkPendingKill();
+			InGraphPin->MarkAsGarbage();
 			Pins.Remove(InGraphPin);
 
 			const int32 Increment = VoxelNode->GetInputPinsIncrement();
@@ -122,7 +122,7 @@ void UVoxelGraphNode::RemoveInputPin(UEdGraphPin* InGraphPin)
 					}
 				}
 			}
-			
+
 			// also remove the VoxelNode child node so ordering matches
 			VoxelNode->Modify();
 			VoxelNode->InputPinCount -= Increment;
@@ -257,7 +257,7 @@ bool UVoxelGraphNode::TryCombinePin(UEdGraphPin& Pin, bool bOnlyCheck)
 	{
 		return false;
 	}
-	
+
 	for (int32 Index = 0; Index < 3; Index++)
 	{
 		if (NeighborPins[IndexX + Index]->LinkedTo.Num() > 0)
@@ -277,7 +277,7 @@ bool UVoxelGraphNode::TryCombinePin(UEdGraphPin& Pin, bool bOnlyCheck)
 		ensure(ParentPinName.RemoveFromStart("X"));
 		ParentPinName.RemoveFromStart(".");
 	}
-	else 
+	else
 	{
 		ensure(ParentPinName.RemoveFromEnd("X"));
 		ParentPinName.RemoveFromEnd(".");
@@ -341,7 +341,7 @@ bool UVoxelGraphNode::HasVectorPin(UVoxelNode& Node, EEdGraphPinDirection Direct
 			Names.Add(Node.GetOutputPinName(Index).ToString());
 		}
 	}
-	
+
 	const auto CheckStart = [&](int32 Index)
 	{
 		FString Name = Names[Index];
@@ -622,7 +622,7 @@ void UVoxelGraphNode::GetPinHoverText(const UEdGraphPin& Pin, FString& HoverText
 	{
 		return;
 	}
-	
+
 	TArray<FGuid> PinIds;
 
 	PinIds.Add(Pin.PinId);

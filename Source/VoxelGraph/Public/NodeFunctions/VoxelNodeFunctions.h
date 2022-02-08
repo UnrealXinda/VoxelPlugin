@@ -24,7 +24,7 @@ class UCurveLinearColor;
 struct VOXELGRAPH_API FVoxelRichCurve
 {
 	FRichCurve Curve;
-	
+
 	inline float GetMin() const { return Min; }
 	inline float GetMax() const { return Max; }
 
@@ -101,11 +101,11 @@ namespace FVoxelNodeFunctions
 		TVoxelRange<v_flt>& OutY,
 		TVoxelRange<v_flt>& OutZ)
 	{
-		if (X.IsSingleValue() && 
-			Y.IsSingleValue() && 
-			Z.IsSingleValue() && 
-			AxisX.IsSingleValue() && 
-			AxisY.IsSingleValue() && 
+		if (X.IsSingleValue() &&
+			Y.IsSingleValue() &&
+			Z.IsSingleValue() &&
+			AxisX.IsSingleValue() &&
+			AxisY.IsSingleValue() &&
 			AxisZ.IsSingleValue() &&
 			Angle.IsSingleValue())
 		{
@@ -587,7 +587,7 @@ namespace FVoxelNodeFunctions
 		return FVoxelRichCurveUtilities::Eval(Curve.Curve, Value);
 	}
 	VOXELGRAPH_API TVoxelRange<v_flt> GetCurveValue(const FVoxelRichCurve& Curve, const TVoxelRange<v_flt>& Value);
-	
+
 	inline void ReadColorTextureDataFloat(
 		const TVoxelTexture<FColor>& Texture,
 		const EVoxelSamplerMode Mode,
@@ -674,7 +674,7 @@ namespace FVoxelNodeFunctions
 			OutA = { 0, 1 };
 		}
 	}
-	
+
 	inline v_flt ReadFloatTextureDataFloat(
 		const TVoxelTexture<float>& Texture,
 		const EVoxelSamplerMode Mode,
@@ -882,7 +882,7 @@ namespace FVoxelNodeFunctions
 			OutZ = InZ;
 		}
 	}
-	
+
 	inline void TransformVector(
 		TVoxelRange<v_flt> InX, TVoxelRange<v_flt> InY, TVoxelRange<v_flt> InZ,
 		TVoxelRange<v_flt>& OutX, TVoxelRange<v_flt>& OutY, TVoxelRange<v_flt>& OutZ, const FVoxelContextRange& Context)
@@ -890,9 +890,9 @@ namespace FVoxelNodeFunctions
 		if (Context.bHasCustomTransform)
 		{
 			const FVector Scale = Context.LocalToWorld.GetScale3D();
-			const TVoxelRange<v_flt> ScaleRange{ Scale.GetMin(), Scale.GetMax() };
+			const TVoxelRange ScaleRange{ StaticCast<v_flt>(Scale.GetMin()), StaticCast<v_flt>(Scale.GetMax()) };
 			const auto Result = TVoxelRange<v_flt>::Union(InX * ScaleRange, InY * ScaleRange, InZ * ScaleRange);
-			
+
 			OutX = Result;
 			OutY = Result;
 			OutZ = Result;
@@ -911,9 +911,9 @@ namespace FVoxelNodeFunctions
 		if (Context.bHasCustomTransform)
 		{
 			const FVector Scale = FVector(1.f) / Context.LocalToWorld.GetScale3D();
-			const TVoxelRange<v_flt> ScaleRange{ Scale.GetMin(), Scale.GetMax() };
+			const TVoxelRange ScaleRange{ StaticCast<v_flt>(Scale.GetMin()), StaticCast<v_flt>(Scale.GetMax()) };
 			const auto Result = TVoxelRange<v_flt>::Union(InX * ScaleRange, InY * ScaleRange, InZ * ScaleRange);
-			
+
 			OutX = Result;
 			OutY = Result;
 			OutZ = Result;
@@ -1065,12 +1065,12 @@ namespace FVoxelNodeFunctions
 	{
 		return TVoxelRange<v_flt>(1.) / X;
 	}
-	
+
 	inline void BreakColor(
-		const FColor& Color, 
-		int32& OutR, 
-		int32& OutG, 
-		int32& OutB, 
+		const FColor& Color,
+		int32& OutR,
+		int32& OutG,
+		int32& OutB,
 		int32& OutA)
 	{
 		OutR = Color.R;
@@ -1079,10 +1079,10 @@ namespace FVoxelNodeFunctions
 		OutA = Color.A;
 	}
 	inline void BreakColor(
-		const FVoxelColorRange& Color, 
-		TVoxelRange<int32>& OutR, 
-		TVoxelRange<int32>& OutG, 
-		TVoxelRange<int32>& OutB, 
+		const FVoxelColorRange& Color,
+		TVoxelRange<int32>& OutR,
+		TVoxelRange<int32>& OutG,
+		TVoxelRange<int32>& OutB,
 		TVoxelRange<int32>& OutA)
 	{
 		OutR = { 0, 255 };
@@ -1090,12 +1090,12 @@ namespace FVoxelNodeFunctions
 		OutB = { 0, 255 };
 		OutA = { 0, 255 };
 	}
-	
+
 	inline void BreakColorFloat(
-		const FColor& Color, 
-		v_flt& OutR, 
-		v_flt& OutG, 
-		v_flt& OutB, 
+		const FColor& Color,
+		v_flt& OutR,
+		v_flt& OutG,
+		v_flt& OutB,
 		v_flt& OutA)
 	{
 		OutR = FVoxelUtilities::UINT8ToFloat(Color.R);
@@ -1104,10 +1104,10 @@ namespace FVoxelNodeFunctions
 		OutA = FVoxelUtilities::UINT8ToFloat(Color.A);
 	}
 	inline void BreakColorFloat(
-		const FVoxelColorRange& Color, 
-		TVoxelRange<v_flt>& OutR, 
-		TVoxelRange<v_flt>& OutG, 
-		TVoxelRange<v_flt>& OutB, 
+		const FVoxelColorRange& Color,
+		TVoxelRange<v_flt>& OutR,
+		TVoxelRange<v_flt>& OutG,
+		TVoxelRange<v_flt>& OutB,
 		TVoxelRange<v_flt>& OutA)
 	{
 		OutR = { 0, 1 };
@@ -1126,8 +1126,8 @@ namespace FVoxelNodeFunctions
 	}
 	inline FVoxelColorRange MakeColor(
 		const TVoxelRange<int32>& R,
-		const TVoxelRange<int32>& G, 
-		const TVoxelRange<int32>& B, 
+		const TVoxelRange<int32>& G,
+		const TVoxelRange<int32>& B,
 		const TVoxelRange<int32>& A)
 	{
 		return {};
@@ -1144,12 +1144,12 @@ namespace FVoxelNodeFunctions
 	inline FVoxelColorRange MakeColorFloat(
 		const TVoxelRange<v_flt>& R,
 		const TVoxelRange<v_flt>& G,
-		const TVoxelRange<v_flt>& B, 
+		const TVoxelRange<v_flt>& B,
 		const TVoxelRange<v_flt>& A)
 	{
 		return {};
 	}
-	
+
 	inline void RGBToHSV(v_flt R, v_flt G, v_flt B, v_flt& OutH, v_flt& OutS, v_flt& OutV)
 	{
 		const auto HSVColor = FLinearColor(R, G, B, 0).LinearRGBToHSV();
@@ -1165,7 +1165,7 @@ namespace FVoxelNodeFunctions
 		OutS = { 0, 1 };
 		OutV = TVoxelRange<v_flt>::Union(R, G, B);
 	}
-	
+
 	inline void HSVToRGB(v_flt H, v_flt S, v_flt V, v_flt& OutR, v_flt& OutG, v_flt& OutB)
 	{
 		const auto RGBColor = FLinearColor(H, S, V, 0).HSVToLinearRGB();
@@ -1198,7 +1198,7 @@ namespace FVoxelNodeFunctions
 		FVoxelMaterial& OutMaterial,
 		TArray<v_flt, TInlineAllocator<128>>& OutFloatOutputs,
 		int32& NumGeneratorsQueried);
-	
+
 	VOXELGRAPH_API void ComputeGeneratorsMergeRange(
 		const TArray<TVoxelSharedPtr<FVoxelGeneratorInstance>>& InInstances,
 		const TArray<FName>& FloatOutputsNames,

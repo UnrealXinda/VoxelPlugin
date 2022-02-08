@@ -22,13 +22,13 @@ public:
 	};
 
 	template<typename ElementType>
-	class ForElementType : public T::template ForAnyElementType<ElementType>
+	class ForElementType : public T::template ForElementType<ElementType>
 	{
 	public:
 		FORCEINLINE typename T::SizeType CalculateSlackGrow(typename T::SizeType NumElements, typename T::SizeType NumAllocatedElements, SIZE_T NumBytesPerElement) const
 		{
 			ensure(false);
-			return T::template ForAnyElementType<ElementType>::CalculateSlackGrow(NumElements, NumAllocatedElements, NumBytesPerElement);
+			return T::template ForElementType<ElementType>::CalculateSlackGrow(NumElements, NumAllocatedElements, NumBytesPerElement);
 		}
 	};
 };
