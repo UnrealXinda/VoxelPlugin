@@ -27,9 +27,9 @@ struct FKey;
 struct EVisibility;
 
 class FVoxelEditorToolsPanel : public TSharedFromThis<FVoxelEditorToolsPanel>, public FGCObject
-{	
+{
 public:
-	FVoxelEditorToolsPanel();
+	FVoxelEditorToolsPanel(FString InReferencerName);
 	~FVoxelEditorToolsPanel();
 
 	void Init(const TSharedPtr<FUICommandList>& CommandListOverride = nullptr);
@@ -38,6 +38,7 @@ public:
 public:
 	//~ Begin FGCObject Interface
 	virtual void AddReferencedObjects(FReferenceCollector& Collector) override;
+	virtual FString GetReferencerName() const override;
 	//~ End FGCObject Interface
 
 public:
@@ -69,13 +70,13 @@ private:
 
 	TSharedPtr<SComboBox<TSharedPtr<UClass*>>> ComboBox;
 	TSharedRef<SBox> Widget;
-	
+
 	TWeakObjectPtr<UWorld> LastWorld;
 	TWeakObjectPtr<AVoxelWorld> LastVoxelWorld;
 
 	TArray<TSharedPtr<UClass*>> ToolsOptions;
 	TSharedPtr<FUICommandList> CommandList;
-	
+
 	float TimeUntilNextGC = 0;
 
 	float BrushSizeDelta = 0.f;
@@ -84,6 +85,8 @@ private:
 
 	bool bShowCustomTools = false;
 	TSharedPtr<SButton> ExpanderButton;
+
+	FString ReferencerName;
 
 private:
 	void RefreshDetails() const;

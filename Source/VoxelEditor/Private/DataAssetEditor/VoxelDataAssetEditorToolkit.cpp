@@ -48,7 +48,8 @@ public:
 	}
 };
 
-FVoxelDataAssetEditorToolkit::FVoxelDataAssetEditorToolkit()
+FVoxelDataAssetEditorToolkit::FVoxelDataAssetEditorToolkit(FString InReferencerName)
+	: ReferencerName(MoveTemp(InReferencerName))
 {
 	PreviewScene = MakeShared<FVoxelAdvancedPreviewScene>();
 	PreviewScene->SetFloorVisibility(false);
@@ -117,17 +118,17 @@ void FVoxelDataAssetEditorToolkit::UnregisterTabSpawners(const TSharedRef<class 
 void FVoxelDataAssetEditorToolkit::InitVoxelEditor(const EToolkitMode::Type Mode, const TSharedPtr< class IToolkitHost >& InitToolkitHost, UObject* ObjectToEdit)
 {
 	DataAsset = CastChecked<UVoxelDataAsset>(ObjectToEdit);
-	
+
 	// Support undo/redo
 	DataAsset->SetFlags(RF_Transactional);
 
-	Manager = MakeUnique<FVoxelDataAssetEditorManager>(DataAsset, *PreviewScene);
+	Manager = MakeUnique<FVoxelDataAssetEditorManager>(DataAsset, *PreviewScene, TEXT("FVoxelDataAssetEditorToolkit"));
 
-	ToolsPanel = MakeShared<FVoxelEditorToolsPanel>();
+	ToolsPanel = MakeShared<FVoxelEditorToolsPanel>(TEXT("FVoxelDataAssetEditorToolkit"));
 	ToolsPanel->Init();
 	// To have a nice screenshot
 	ToolsPanel->ClearTool();
-	
+
 	FVoxelDataAssetEditorCommands::Register();
 
 	BindCommands();
@@ -169,12 +170,12 @@ void FVoxelDataAssetEditorToolkit::InitVoxelEditor(const EToolkitMode::Type Mode
 				->SetSizeCoefficient(0.80f)
 				->Split
 				(
-					FTabManager::NewStack() 
+					FTabManager::NewStack()
 					->SetSizeCoefficient(0.8f)
 					->SetHideTabWell( true )
 					->AddTab( PreviewTabId, ETabState::OpenedTab )
 				)
-				
+
 			)
 		)
 	);
@@ -226,7 +227,7 @@ void FVoxelDataAssetEditorToolkit::CreateInternalWidgets()
 		Details = PropertyModule.CreateDetailView(Args);
 		Details->SetObject(DataAsset);
 	}
-	
+
 	FAdvancedPreviewSceneModule& AdvancedPreviewSceneModule = FModuleManager::LoadModuleChecked<FAdvancedPreviewSceneModule>("AdvancedPreviewScene");
 	AdvancedPreviewSettingsWidget = AdvancedPreviewSceneModule.CreateAdvancedPreviewSceneSettingsWidget(PreviewScene.ToSharedRef());
 
@@ -236,7 +237,7 @@ void FVoxelDataAssetEditorToolkit::CreateInternalWidgets()
 void FVoxelDataAssetEditorToolkit::ExtendToolbar()
 {
 	TSharedPtr<FExtender> ToolbarExtender = MakeShared<FExtender>();
-	
+
 	ToolbarExtender->AddToolBarExtension(
 		"Asset",
 		EExtensionHook::After,
@@ -250,7 +251,7 @@ void FVoxelDataAssetEditorToolkit::ExtendToolbar()
 void FVoxelDataAssetEditorToolkit::FillToolbar(FToolBarBuilder& ToolbarBuilder)
 {
 	auto& Commands = FVoxelDataAssetEditorCommands::Get();
-	
+
 	ToolbarBuilder.BeginSection("Toolbar");
 	ToolbarBuilder.AddToolBarButton(Commands.InvertDataAsset);
 	ToolbarBuilder.EndSection();
@@ -276,7 +277,7 @@ void FVoxelDataAssetEditorToolkit::SaveAsset_Execute()
 
 	Progress.EnterProgressFrame();
 	Manager->Save(true);
-	
+
 	Progress.EnterProgressFrame();
 	FAssetEditorToolkit::SaveAsset_Execute();
 }
@@ -317,6 +318,11 @@ bool FVoxelDataAssetEditorToolkit::OnRequestClose()
 void FVoxelDataAssetEditorToolkit::AddReferencedObjects(FReferenceCollector& Collector)
 {
 	Collector.AddReferencedObject(DataAsset);
+}
+
+FString FVoxelDataAssetEditorToolkit::GetReferencerName() const
+{
+	return ReferencerName;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -413,7 +419,7 @@ FVoxelEditorToolsPanel& FVoxelDataAssetEditorToolkit::GetPanel() const
 ///////////////////////////////////////////////////////////////////////////////
 
 TSharedRef<SDockTab> FVoxelDataAssetEditorToolkit::SpawnTab_EditTools(const FSpawnTabArgs& Args)
-{	
+{
 	check(Args.GetTabId() == EditToolsTabId);
 
 	auto Tab =
@@ -491,10 +497,10 @@ void FVoxelDataAssetEditorToolkit::InvertDataAsset()
 		Progress.EnterProgressFrame();
 		Manager->Save(false);
 	}
-	
+
 	const auto NewData = MakeVoxelShared<FVoxelDataAssetData>();
 	UVoxelAssetTools::InvertDataAssetImpl(*DataAsset->GetData(), *NewData);
 	DataAsset->SetData(NewData);
-	
+
 	Manager->RecreateWorld();
 }

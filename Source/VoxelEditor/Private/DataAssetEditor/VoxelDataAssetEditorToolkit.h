@@ -19,22 +19,22 @@ class FVoxelEditorToolsPanel;
 class FVoxelDataAssetEditorToolkit : public IVoxelDataAssetEditor, public FGCObject, public FNotifyHook
 {
 public:
-	FVoxelDataAssetEditorToolkit();
+	FVoxelDataAssetEditorToolkit(FString InReferencerName);
 	virtual ~FVoxelDataAssetEditorToolkit();
 
 	virtual void RegisterTabSpawners(const TSharedRef<class FTabManager>& TabManager) override;
 	virtual void UnregisterTabSpawners(const TSharedRef<class FTabManager>& TabManager) override;
 
 	void InitVoxelEditor(EToolkitMode::Type Mode, const TSharedPtr< class IToolkitHost >& InitToolkitHost, UObject* ObjectToEdit);
-	
+
 private:
 	// Creates all internal widgets for the tabs to point at
 	void CreateInternalWidgets();
-	// Builds the toolbar widget for the Voxel editor 
+	// Builds the toolbar widget for the Voxel editor
 	void ExtendToolbar();
 	// Called by ExtendToolbar
 	void FillToolbar(FToolBarBuilder& ToolbarBuilder);
-	// Binds new graph commands to delegates 
+	// Binds new graph commands to delegates
 	void BindCommands();
 
 public:
@@ -52,19 +52,20 @@ public:
 
 	//~ Begin FGCObject interface
 	virtual void AddReferencedObjects(FReferenceCollector& Collector) override;
+	virtual FString GetReferencerName() const override;
 	//~ End FGCObject interface
-	
+
 	//~ Begin FNotifyHook interface
 	virtual void NotifyPostChange(const FPropertyChangedEvent& PropertyChangedEvent, FProperty* PropertyThatChanged) override;
 	//~ End FNotifyHook interface
-	
+
 	//~ Begin IVoxelDataAssetEditor interface
 	virtual FAdvancedPreviewScene& GetPreviewScene() const override;
 	virtual AVoxelWorld& GetVoxelWorld() const override;
 	virtual UVoxelDataAsset& GetDataAsset() const override;
 	virtual FVoxelEditorToolsPanel& GetPanel() const override;
 	//~ End IVoxelDataAssetEditor interface
-	
+
 private:
 	TSharedRef<SDockTab> SpawnTab_EditTools(const FSpawnTabArgs& Args);
 	TSharedRef<SDockTab> SpawnTab_PreviewSettings(const FSpawnTabArgs& Args);
@@ -78,7 +79,7 @@ private:
 private:
 	// The Voxel asset being inspected
 	UVoxelDataAsset* DataAsset = nullptr;
-	
+
 	// Manager, handles the voxel world
 	TUniquePtr<FVoxelDataAssetEditorManager> Manager;
 
@@ -87,7 +88,7 @@ private:
 	 * Tabs
 	 */
 
-	// Preview settings tab 
+	// Preview settings tab
 	TSharedPtr<IDetailsView> PreviewSettings;
 
 	// Asset details
@@ -102,7 +103,9 @@ private:
 
 	// Editor tools tab
 	TSharedPtr<FVoxelEditorToolsPanel> ToolsPanel;
-	
+
+	FString ReferencerName;
+
 	//	The tab ids for all the tabs used
 	static const FName EditToolsTabId;
 	static const FName PreviewSettingsTabId;

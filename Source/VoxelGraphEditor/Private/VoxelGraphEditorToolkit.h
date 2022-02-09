@@ -24,7 +24,7 @@ class IMessageLogListing;
 class FVoxelGraphEditorToolkit : public IVoxelGraphEditorToolkit, public FGCObject, public FNotifyHook, public FEditorUndoClient, public FTickableEditorObject
 {
 public:
-	FVoxelGraphEditorToolkit();
+	FVoxelGraphEditorToolkit(FString InReferencerName);
 	virtual ~FVoxelGraphEditorToolkit();
 
 	virtual void RegisterTabSpawners(const TSharedRef<class FTabManager>& TabManager) override;
@@ -78,6 +78,7 @@ public:
 
 	//~ Begin FGCObject interface
 	virtual void AddReferencedObjects(FReferenceCollector& Collector) override;
+	virtual FString GetReferencerName() const override;
 	//~ End FGCObject interface
 
 	//~ Begin FEditorUndoClient Interface
@@ -132,12 +133,12 @@ public:
 	bool CanDeleteInput() const;
 
 	void OnCreateComment();
-	
+
 	void OnTogglePinPreview();
 
 	void OnSplitPin();
 	void OnCombinePin();
-	
+
 	void SelectAllNodes();
 	bool CanSelectAllNodes() const { return true; }
 
@@ -157,7 +158,7 @@ public:
 
 	void DuplicateNodes();
 	bool CanDuplicateNodes() const;
-	
+
 	void OnAlignTop();
 	void OnAlignMiddle();
 	void OnAlignBottom();
@@ -185,14 +186,14 @@ public:
 	void RecreateNodes();
 
 	void CompileToCpp();
-	
+
 	void ToggleAutomaticPreview();
 	bool IsToggleAutomaticPreviewChecked() const;
 	void UpdatePreview(EVoxelGraphPreviewFlags Flags);
 	void UpdateVoxelWorlds();
-	
+
 	void ClearNodesMessages();
-	
+
 	void ShowAxisDependencies();
 
 	void UndoGraphAction();
@@ -218,7 +219,7 @@ private:
 	/**
 	 * Tabs
 	 */
-	
+
 	// Graphs tabs
 	TSharedPtr<SDockTab> GraphTab;
 	TSharedPtr<SGraphEditor> VoxelGraphEditor;
@@ -228,13 +229,13 @@ private:
 	// Properties tabs
 	TSharedPtr<IDetailsView> VoxelProperties;
 	TSharedPtr<IDetailsView> ShortcutsProperties;
-	
+
 	// Preview settings tab
 	TSharedPtr<IDetailsView> PreviewSettings;
-	
+
 	// Palette of Voxel Node types
 	TSharedPtr<SVoxelPalette> Palette;
-	
+
 	// Preview tab
 	TSharedPtr<SVoxelGraphPreview> Preview;
 	// 3D Preview
@@ -247,6 +248,8 @@ private:
 	// Messages panel
 	TSharedPtr<SWidget> MessagesWidget;
 	TSharedPtr<IMessageLogListing> MessagesListing;
+
+	FString ReferencerName;
 
 	//	The tab ids for all the tabs used
 	static const FName GraphCanvasTabId;

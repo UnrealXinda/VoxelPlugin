@@ -59,7 +59,8 @@ const FName FVoxelGraphEditorToolkit::PreviewTabId(TEXT("VoxelGraphEditor_Previe
 const FName FVoxelGraphEditorToolkit::PreviewViewportTabId(TEXT("VoxelGraphEditor_PreviewViewport"));
 const FName FVoxelGraphEditorToolkit::MessagesTabId(TEXT("VoxelGraphEditor_Messages"));
 
-FVoxelGraphEditorToolkit::FVoxelGraphEditorToolkit()
+FVoxelGraphEditorToolkit::FVoxelGraphEditorToolkit(FString InReferencerName)
+	: ReferencerName(MoveTemp(InReferencerName))
 {
 
 }
@@ -148,7 +149,7 @@ void FVoxelGraphEditorToolkit::UnregisterTabSpawners(const TSharedRef<class FTab
 void FVoxelGraphEditorToolkit::InitVoxelEditor(const EToolkitMode::Type Mode, const TSharedPtr< class IToolkitHost >& InitToolkitHost, UObject* ObjectToEdit)
 {
 	FVoxelMessages::Info("You can view and edit Voxel Graphs, but running them requires Voxel Plugin Pro");
-	
+
 	Generator = CastChecked<UVoxelGraphGenerator>(ObjectToEdit);
 
 	if (!ensureAlways(Generator->VoxelGraph && Generator->VoxelDebugGraph))
@@ -213,7 +214,7 @@ void FVoxelGraphEditorToolkit::InitVoxelEditor(const EToolkitMode::Type Mode, co
 				->SetSizeCoefficient(0.7f)
 				->Split
 				(
-					FTabManager::NewStack() 
+					FTabManager::NewStack()
 					->SetSizeCoefficient(0.8f)
 					->SetHideTabWell( true )
 					->AddTab( GraphCanvasTabId, ETabState::OpenedTab )
@@ -221,14 +222,14 @@ void FVoxelGraphEditorToolkit::InitVoxelEditor(const EToolkitMode::Type Mode, co
 				)
 				->Split
 				(
-					FTabManager::NewStack() 
+					FTabManager::NewStack()
 					->SetSizeCoefficient(0.2f)
 					->AddTab( MessagesTabId, ETabState::OpenedTab )
 				)
 			)
 			->Split
 			(
-				FTabManager::NewSplitter() ->SetOrientation(Orient_Vertical) 
+				FTabManager::NewSplitter() ->SetOrientation(Orient_Vertical)
 				->SetSizeCoefficient(0.3f)
 				->Split
 				(
@@ -285,14 +286,14 @@ void FVoxelGraphEditorToolkit::CreateInternalWidgets()
 
 	PreviewSettings = PropertyModule.CreateDetailView(Args);
 	PreviewSettings->SetObject(Generator->PreviewSettings);
-	
+
 	// Must be created before PreviewViewport
 	PreviewScene = MakeShareable(new FAdvancedPreviewScene(FPreviewScene::ConstructionValues()));
 
 	Palette = SNew(SVoxelPalette);
 	Preview = SNew(SVoxelGraphPreview).PreviewSettings(Generator->PreviewSettings);
 	PreviewViewport = SNew(SVoxelGraphPreviewViewport).VoxelGraphEditorToolkit(SharedThis(this));
-	
+
 	PreviewHandler = MakeShared<FVoxelGraphPreview>(Generator, Preview, PreviewViewport, PreviewScene);
 
 	Preview->SetTexture(Generator->GetPreviewTexture());
@@ -312,7 +313,7 @@ void FVoxelGraphEditorToolkit::CreateInternalWidgets()
 void FVoxelGraphEditorToolkit::FillToolbar(FToolBarBuilder& ToolbarBuilder)
 {
 	ToolbarBuilder.BeginSection("Toolbar");
-	
+
 	auto& Commands = FVoxelGraphEditorCommands::Get();
 	ToolbarBuilder.AddToolBarButton(Commands.CompileToCpp);
 	ToolbarBuilder.AddSeparator();
@@ -383,7 +384,7 @@ void FVoxelGraphEditorToolkit::BindGraphCommands()
 	ToolkitCommands->MapAction(
 		Commands.RecreateNodes,
 		FExecuteAction::CreateSP(this, &FVoxelGraphEditorToolkit::RecreateNodes));
-	
+
 	ToolkitCommands->MapAction(
 		Commands.ToggleAutomaticPreview,
 		FExecuteAction::CreateSP(this, &FVoxelGraphEditorToolkit::ToggleAutomaticPreview),
@@ -393,7 +394,7 @@ void FVoxelGraphEditorToolkit::BindGraphCommands()
 	ToolkitCommands->MapAction(
 		Commands.UpdatePreview,
 		FExecuteAction::CreateSP(this, &FVoxelGraphEditorToolkit::UpdatePreview, EVoxelGraphPreviewFlags::UpdateAll | EVoxelGraphPreviewFlags::ManualPreview));
-	
+
 	ToolkitCommands->MapAction(
 		Commands.UpdateVoxelWorlds,
 		FExecuteAction::CreateSP(this, &FVoxelGraphEditorToolkit::UpdateVoxelWorlds));
@@ -730,6 +731,11 @@ void FVoxelGraphEditorToolkit::AddReferencedObjects(FReferenceCollector& Collect
 	}
 }
 
+FString FVoxelGraphEditorToolkit::GetReferencerName() const
+{
+	return ReferencerName;
+}
+
 void FVoxelGraphEditorToolkit::PostUndo(bool bSuccess)
 {
 	if (VoxelGraphEditor.IsValid())
@@ -777,10 +783,10 @@ TSharedRef<SDockTab> FVoxelGraphEditorToolkit::SpawnTab_GraphCanvas(const FSpawn
 
 	auto Tab = SNew(SDockTab)
 		      .Label(VOXEL_LOCTEXT("Main Graph"));
-	
+
 	GraphTab = Tab;
 	GraphTab->SetContent(VoxelGraphEditor.ToSharedRef());
-	
+
 	return Tab;
 }
 
@@ -800,7 +806,7 @@ TSharedRef<SDockTab> FVoxelGraphEditorToolkit::SpawnTab_DebugGraphCanvas(const F
 TSharedRef<SDockTab> FVoxelGraphEditorToolkit::SpawnTab_Properties(const FSpawnTabArgs& Args)
 {
 	check(Args.GetTabId() == PropertiesTabId);
-	
+
 	auto Tab =
 		 SNew(SDockTab)
 		.Icon(FEditorStyle::GetBrush("LevelEditor.Tabs.Details"))
@@ -814,7 +820,7 @@ TSharedRef<SDockTab> FVoxelGraphEditorToolkit::SpawnTab_Properties(const FSpawnT
 TSharedRef<SDockTab> FVoxelGraphEditorToolkit::SpawnTab_Shortcuts(const FSpawnTabArgs& Args)
 {
 	check(Args.GetTabId() == ShortcutsTabId);
-	
+
 	auto Tab =
 		 SNew(SDockTab)
 		.Icon(FEditorStyle::GetBrush("LevelEditor.Tabs.Details"))
@@ -828,7 +834,7 @@ TSharedRef<SDockTab> FVoxelGraphEditorToolkit::SpawnTab_Shortcuts(const FSpawnTa
 TSharedRef<SDockTab> FVoxelGraphEditorToolkit::SpawnTab_PreviewSettings(const FSpawnTabArgs& Args)
 {
 	check(Args.GetTabId() == PreviewSettingsTabId);
-	
+
 	auto Tab =
 		 SNew(SDockTab)
 		.Icon(FEditorStyle::GetBrush("LevelEditor.Tabs.Details"))
@@ -842,7 +848,7 @@ TSharedRef<SDockTab> FVoxelGraphEditorToolkit::SpawnTab_PreviewSettings(const FS
 TSharedRef<SDockTab> FVoxelGraphEditorToolkit::SpawnTab_Palette(const FSpawnTabArgs& Args)
 {
 	check(Args.GetTabId() == PaletteTabId);
-	
+
 	auto Tab =
 		 SNew(SDockTab)
 		.Icon(FEditorStyle::GetBrush("Kismet.Tabs.Palette"))
@@ -856,7 +862,7 @@ TSharedRef<SDockTab> FVoxelGraphEditorToolkit::SpawnTab_Palette(const FSpawnTabA
 TSharedRef<SDockTab> FVoxelGraphEditorToolkit::SpawnTab_Preview(const FSpawnTabArgs& Args)
 {
 	check(Args.GetTabId() == PreviewTabId);
-	
+
 	auto Tab =
 		 SNew(SDockTab)
 		.Icon(FEditorStyle::GetBrush("LevelEditor.Tabs.Viewports"))
@@ -930,7 +936,7 @@ void FVoxelGraphEditorToolkit::OnSelectedNodesChanged(const TSet<class UObject*>
 	{
 		Selection.Add(Generator);
 	}
-	
+
 	VoxelProperties->SetObjects(Selection);
 }
 
@@ -1013,7 +1019,7 @@ void FVoxelGraphEditorToolkit::OnCreateComment()
 }
 
 void FVoxelGraphEditorToolkit::OnTogglePinPreview()
-{	
+{
 	UEdGraphPin* SelectedPin = VoxelGraphEditor->GetGraphPinForMenu();
 	UVoxelGraphNode* SelectedNode = Cast<UVoxelGraphNode>(SelectedPin->GetOwningNode());
 	UVoxelGraphNode* GraphNodeToPreview = Cast<UVoxelGraphNode>(SelectedNode);
@@ -1035,7 +1041,7 @@ void FVoxelGraphEditorToolkit::OnTogglePinPreview()
 			SelectedPin->bIsDiffing = true;
 			Generator->PreviewedPin.SetPin(SelectedPin);
 		}
-		
+
 		VoxelGraphEditor->NotifyGraphChanged();
 	}
 	UpdatePreview(EVoxelGraphPreviewFlags::UpdateAll | EVoxelGraphPreviewFlags::ManualPreview);
@@ -1479,7 +1485,7 @@ void FVoxelGraphEditorToolkit::OnConvertRerouteToVariables()
 				UEdGraph* Graph = GraphNode->GetGraph();
 				const FScopedTransaction Transaction(VOXEL_LOCTEXT("Convert reroute to local variables"));
 				Graph->Modify();
-				
+
 				const TArray<UEdGraphPin*>& InputPins = GraphNode->GetInputPin()->LinkedTo;
 				TArray<UEdGraphPin*> OutputPins = GraphNode->GetOutputPin()->LinkedTo;
 				OutputPins.Sort([](UEdGraphPin& A, UEdGraphPin& B) { return A.GetOwningNode()->NodePosY < B.GetOwningNode()->NodePosY; });
@@ -1687,7 +1693,7 @@ void FVoxelGraphEditorToolkit::ClearNodesMessages()
 void FVoxelGraphEditorToolkit::ShowAxisDependencies()
 {
 	FVoxelGraphErrorReporter::ClearNodesMessages(Generator);
-	
+
 }
 
 ///////////////////////////////////////////////////////////////////////////////

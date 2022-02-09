@@ -21,8 +21,8 @@
 #include "EngineUtils.h"
 #include "Materials/MaterialInterface.h"
 
-FVoxelDataAssetEditorManager::FVoxelDataAssetEditorManager(UVoxelDataAsset* DataAsset, FPreviewScene& PreviewScene)
-	: DataAsset(DataAsset)
+FVoxelDataAssetEditorManager::FVoxelDataAssetEditorManager(UVoxelDataAsset* DataAsset, FPreviewScene& PreviewScene, FString InReferencerName)
+	: DataAsset(DataAsset), ReferencerName(MoveTemp(InReferencerName))
 {
 	check(DataAsset);
 
@@ -33,7 +33,7 @@ FVoxelDataAssetEditorManager::FVoxelDataAssetEditorManager(UVoxelDataAsset* Data
 		NewWorld->VoxelMaterial = FVoxelExampleUtilities::LoadExampleObject<UMaterialInterface>(TEXT("/Voxel/Examples/Materials/Quixel/MI_VoxelQuixel_FiveWayBlend_Inst"));
 
 		FVoxelConfigUtilities::LoadConfig(NewWorld, "VoxelDataAssetEditor.DefaultVoxelWorld");
-		
+
 		DataAsset->VoxelWorldTemplate = NewWorld;
 		DataAsset->MarkPackageDirty();
 	}
@@ -60,6 +60,11 @@ void FVoxelDataAssetEditorManager::AddReferencedObjects(FReferenceCollector& Col
 	check(World);
 }
 
+FString FVoxelDataAssetEditorManager::GetReferencerName() const
+{
+	return ReferencerName;
+}
+
 AVoxelWorld& FVoxelDataAssetEditorManager::GetVoxelWorld() const
 {
 	check(World);
@@ -71,7 +76,7 @@ void FVoxelDataAssetEditorManager::Save(bool bShowDebug)
 	FVoxelScopedSlowTask Progress(6);
 
 	auto& Data = World->GetSubsystemChecked<FVoxelData>();
-	
+
 	Progress.EnterProgressFrame(1, VOXEL_LOCTEXT("Rounding voxels"));
 	if (GetDefault<UVoxelSettings>()->bRoundBeforeSaving)
 	{
@@ -92,12 +97,12 @@ void FVoxelDataAssetEditorManager::Save(bool bShowDebug)
 			}
 		});
 	}
-	
+
 	// Should always have at least one dirty voxel, else it would mean that the original data asset had a size of 0 which is invalid
 	if (!ensure(OptionalDirtyBounds.IsValid())) return;
 
 	const auto DirtyBounds = OptionalDirtyBounds.GetBox();
-	
+
 	const bool bSubtractiveAsset = DataAsset->bSubtractiveAsset;
 
 	Progress.EnterProgressFrame(1, VOXEL_LOCTEXT("Finding voxels to save"));
@@ -126,19 +131,19 @@ void FVoxelDataAssetEditorManager::Save(bool bShowDebug)
 
 	const FIntVector PositionOffset = BoundsToSave.Min;
 	const FIntVector Size = BoundsToSave.Size();
-	
+
 	const auto AssetData = MakeVoxelShared<FVoxelDataAssetData>();
 	AssetData->SetSize(Size, bHasMaterials);
 
 	{
 		FVoxelReadScopeLock Lock(Data, BoundsToSave, "Data Asset Save");
-		
+
 		Progress.EnterProgressFrame(1, VOXEL_LOCTEXT("Copying values"));
 		{
 			TVoxelQueryZone<FVoxelValue> QueryZone(BoundsToSave, AssetData->GetRawValues());
 			Data.Get<FVoxelValue>(QueryZone, 0);
 		}
-			
+
 		Progress.EnterProgressFrame(1, VOXEL_LOCTEXT("Copying materials"));
 		if (bHasMaterials)
 		{

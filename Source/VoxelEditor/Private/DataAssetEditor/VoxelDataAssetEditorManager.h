@@ -12,11 +12,12 @@ class FPreviewScene;
 class FVoxelDataAssetEditorManager : public FGCObject
 {
 public:
-	FVoxelDataAssetEditorManager(UVoxelDataAsset* DataAsset, FPreviewScene& PreviewScene);
+	FVoxelDataAssetEditorManager(UVoxelDataAsset* DataAsset, FPreviewScene& PreviewScene, FString InReferencerName);
 	~FVoxelDataAssetEditorManager();
 
 	//~ Begin FGCObject Interface
 	virtual void AddReferencedObjects(FReferenceCollector& Collector) override;
+	virtual FString GetReferencerName() const override;
 	//~ End FGCObject Interface
 
 public:
@@ -25,12 +26,13 @@ public:
 public:
 	void Save(bool bShowDebug);
 	void RecreateWorld();
-	
+
 	bool IsDirty() const;
 
 private:
 	UVoxelDataAsset* const DataAsset;
 	AVoxelWorld* World;
+	FString ReferencerName;
 
 	void CreateWorld();
 };

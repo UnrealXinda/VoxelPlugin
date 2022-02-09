@@ -32,17 +32,17 @@ public:
 	virtual void StartupModule() override
 	{
 		IVoxelGraphEditor::SetVoxelGraphEditor(MakeShared<FVoxelGraphEditor>());
-		
+
 		FEdGraphUtilities::RegisterVisualPinConnectionFactory(MakeShared<FVoxelGraphConnectionDrawingPolicyFactory>());
 		FEdGraphUtilities::RegisterVisualNodeFactory(MakeShared<FVoxelGraphNodeFactory>());
 		FEdGraphUtilities::RegisterVisualPinFactory(MakeShared<FVoxelGraphPanelPinFactory>());
 
-		
+
 		FContentBrowserModule& ContentBrowserModule = FModuleManager::LoadModuleChecked<FContentBrowserModule>(TEXT("ContentBrowser"));
 		ContentBrowserModule.GetAllAssetViewContextMenuExtenders().Add(FContentBrowserMenuExtender_SelectedAssets::CreateLambda([=](const TArray<FAssetData>& SelectedAssets)
 		{
 			const auto Extender = MakeShared<FExtender>();
-			
+
 			for (auto& It : SelectedAssets)
 			{
 				if (!It.GetClass()->IsChildOf<UVoxelGraphGenerator>())
@@ -50,7 +50,7 @@ public:
 					return Extender;
 				}
 			}
-		
+
 			Extender->AddMenuExtension(
 				"CommonAssetActions",
 				EExtensionHook::After,
@@ -78,32 +78,32 @@ public:
 			// Compile To C++
 			StyleSet->Set("VoxelGraphEditor.CompileToCpp"                    , new FSlateImageBrush(StyleSet->RootToContentDir(TEXT("Icons/icon_compile_40x.png")), Icon40x40));
 			StyleSet->Set("VoxelGraphEditor.CompileToCpp.Small"              , new FSlateImageBrush(StyleSet->RootToContentDir(TEXT("Icons/icon_compile_40x.png")), Icon20x20));
-																		     
-			// Update Macros											     
+
+			// Update Macros
 			StyleSet->Set("VoxelGraphEditor.RecreateNodes"                   , new FSlateImageBrush(StyleSet->RootToContentDir(TEXT("Icons/icon_Cascade_RestartInLevel_40x.png")), Icon40x40));
 			StyleSet->Set("VoxelGraphEditor.RecreateNodes.Small"             , new FSlateImageBrush(StyleSet->RootToContentDir(TEXT("Icons/icon_Cascade_RestartInLevel_40x.png")), Icon20x20));
-																		     
-			// Enable automatic preview									     
+
+			// Enable automatic preview
 			StyleSet->Set("VoxelGraphEditor.ToggleAutomaticPreview"          , new FSlateImageBrush(StyleSet->RootToContentDir(TEXT("Icons/icon_MatEd_LivePreview_40x.png")), Icon40x40));
 			StyleSet->Set("VoxelGraphEditor.ToggleAutomaticPreview.Small"    , new FSlateImageBrush(StyleSet->RootToContentDir(TEXT("Icons/icon_MatEd_LivePreview_40x.png")), Icon20x20));
-																		     
-			// Update preview											     
+
+			// Update preview
 			StyleSet->Set("VoxelGraphEditor.UpdatePreview"                   , new FSlateImageBrush(StyleSet->RootToContentDir(TEXT("Icons/icon_Cascade_RestartInLevel_40x.png")), Icon40x40));
 			StyleSet->Set("VoxelGraphEditor.UpdatePreview.Small"             , new FSlateImageBrush(StyleSet->RootToContentDir(TEXT("Icons/icon_Cascade_RestartInLevel_40x.png")), Icon20x20));
-																		     
-			// Clear messages											     
+
+			// Clear messages
 			StyleSet->Set("VoxelGraphEditor.ClearNodesMessages"              , new FSlateImageBrush(StyleSet->RootToContentDir(TEXT("Icons/icon_file_new_40x.png")), Icon40x40));
 			StyleSet->Set("VoxelGraphEditor.ClearNodesMessages.Small"        , new FSlateImageBrush(StyleSet->RootToContentDir(TEXT("Icons/icon_file_new_16px.png")), Icon20x20));
-					
+
 			// Show Axis Dependencies
 			StyleSet->Set("VoxelGraphEditor.ShowAxisDependencies"            , new FSlateImageBrush(StyleSet->RootToContentDir(TEXT("Icons/Profiler/profiler_Calls_32x.png")), Icon40x40));
 			StyleSet->Set("VoxelGraphEditor.ShowAxisDependencies.Small"      , new FSlateImageBrush(StyleSet->RootToContentDir(TEXT("Icons/Profiler/profiler_Calls_32x.png")), Icon20x20));
-		
-			// Show stats												     
+
+			// Show stats
 			StyleSet->Set("VoxelGraphEditor.ShowStats"                       , new FSlateImageBrush(StyleSet->RootToContentDir(TEXT("Icons/Profiler/Profiler_Data_Capture_40x.png")), Icon40x40));
 			StyleSet->Set("VoxelGraphEditor.ShowStats.Small"                 , new FSlateImageBrush(StyleSet->RootToContentDir(TEXT("Icons/Profiler/Profiler_Data_Capture_40x.png")), Icon20x20));
 
-			// Show values											     
+			// Show values
 			StyleSet->Set("VoxelGraphEditor.ShowValues"                      , new FSlateImageBrush(StyleSet->RootToContentDir(TEXT("Icons/icon_TextureEd_CompressNow_512x.png")), Icon40x40));
 			StyleSet->Set("VoxelGraphEditor.ShowValues.Small"                , new FSlateImageBrush(StyleSet->RootToContentDir(TEXT("Icons/icon_TextureEd_CompressNow_512x.png")), Icon20x20));
 
@@ -127,7 +127,7 @@ public:
 
 	virtual TSharedRef<IVoxelGraphEditorToolkit> CreateVoxelGraphEditor(const EToolkitMode::Type Mode, const TSharedPtr< IToolkitHost >& InitToolkitHost, UVoxelGraphGenerator* Generator) override
 	{
-		TSharedRef<FVoxelGraphEditorToolkit> NewVoxelEditor(new FVoxelGraphEditorToolkit());
+		TSharedRef<FVoxelGraphEditorToolkit> NewVoxelEditor(new FVoxelGraphEditorToolkit(TEXT("FVoxelGraphEditorModule")));
 		NewVoxelEditor->InitVoxelEditor(Mode, InitToolkitHost, Generator);
 		return NewVoxelEditor;
 	}

@@ -14,15 +14,15 @@ const FEditorModeID FEdModeVoxel::EM_Voxel = TEXT("EM_Voxel");
 void FEdModeVoxel::Enter()
 {
 	FEdMode::Enter();
-	
-	Panel = MakeShareable(new FVoxelEditorToolsPanel());
+
+	Panel = MakeShareable(new FVoxelEditorToolsPanel(TEXT("FEdModeVoxel")));
 	Toolkit = MakeShareable(new FVoxelEdModeToolkit);
 
 	// Toolkit needs the panel to be created
 	Toolkit->Init(Owner->GetToolkitHost());
 	Panel->Init(Toolkit->GetToolkitCommands());
 	Toolkit->GetInlineContent();
-	
+
 	FVoxelEditorUtilities::EnableRealtime();
 }
 
@@ -120,7 +120,7 @@ bool FEdModeVoxel::InputAxis(FEditorViewportClient* ViewportClient, FViewport* V
 	{
 		return Panel->InputAxis(ViewportClient, Viewport, Key, Delta, DeltaTime);
 	}
-	
+
 	return false;
 }
 

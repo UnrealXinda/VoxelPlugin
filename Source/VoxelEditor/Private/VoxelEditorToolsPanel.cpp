@@ -42,8 +42,8 @@
 
 static const FString ToolConfigSectionName = "VoxelTool";
 
-FVoxelEditorToolsPanel::FVoxelEditorToolsPanel()
-	: Widget(SNew(SBox))
+FVoxelEditorToolsPanel::FVoxelEditorToolsPanel(FString InReferencerName)
+	: Widget(SNew(SBox)), ReferencerName(MoveTemp(InReferencerName))
 {
 }
 
@@ -57,7 +57,7 @@ FVoxelEditorToolsPanel::~FVoxelEditorToolsPanel()
 		{
 			FVoxelConfigUtilities::SaveConfig(Tool, ToolConfigSectionName);
 		}
-		
+
 		ToolManager->SetActiveTool(nullptr);
 	}
 }
@@ -69,11 +69,11 @@ void FVoxelEditorToolsPanel::Init(const TSharedPtr<FUICommandList>& CommandListO
 	{
 		CommandList = MakeShared<FUICommandList>();
 	}
-	
+
 	FPropertyEditorModule& PropertyEditorModule = FModuleManager::LoadModuleChecked<FPropertyEditorModule>("PropertyEditor");
 	FDetailsViewArgs DetailsViewArgs(false, false, false, FDetailsViewArgs::HideNameArea);
 	DetailsViewArgs.DefaultsOnlyVisibility = EEditDefaultsOnlyNodeVisibility::Automatic;
-	
+
 	ToolManager = NewObject<UVoxelToolManager>(GetTransientPackage(), NAME_None, RF_Transient | RF_Transactional);
 	ToolManager->CreateDefaultTools(true);
 	ToolManager->GetSharedConfig().RefreshDetails.AddSP(this, &FVoxelEditorToolsPanel::RefreshDetails);
@@ -101,7 +101,7 @@ void FVoxelEditorToolsPanel::Init(const TSharedPtr<FUICommandList>& CommandListO
 	{
 		FVoxelConfigUtilities::SaveConfig(&ToolManager->GetSharedConfig(), ToolConfigSectionName);
 	});
-	
+
 	ToolDetailsPanel = PropertyEditorModule.CreateDetailView(DetailsViewArgs);
 	ToolDetailsPanel->SetObject(ToolManager->GetActiveTool());
 	ToolDetailsPanel->SetIsPropertyVisibleDelegate(IsPropertyVisibleDelegate);
@@ -244,7 +244,7 @@ void FVoxelEditorToolsPanel::Init(const TSharedPtr<FUICommandList>& CommandListO
 			})
 			.ToolTipText_Lambda([=]()
 			{
-				return bShowCustomTools ? VOXEL_LOCTEXT("Hide custom tools") : VOXEL_LOCTEXT("Show custom tools");	
+				return bShowCustomTools ? VOXEL_LOCTEXT("Hide custom tools") : VOXEL_LOCTEXT("Show custom tools");
 			})
 			[
 				SNew(SImage)
@@ -274,7 +274,7 @@ void FVoxelEditorToolsPanel::Init(const TSharedPtr<FUICommandList>& CommandListO
 			.Image(FEditorStyle::GetBrush("DetailsView.AdvancedDropdownBorder.Open"))
 		]
 	];
-	
+
 	for (auto& ToolBarBuilder : CustomToolBarBuilders)
 	{
 		CustomToolBarsVerticalBox->AddSlot()
@@ -319,13 +319,13 @@ void FVoxelEditorToolsPanel::Init(const TSharedPtr<FUICommandList>& CommandListO
 void FVoxelEditorToolsPanel::CustomizeToolbar(FToolBarBuilder& ToolBarBuilder)
 {
 	const auto& Commands = FVoxelToolsCommands::Get();
-	
+
 #if VOXEL_ENGINE_VERSION  >= 425
 	ToolBarBuilder.AddToolBarButton(Commands.SurfaceTool);
 	ToolBarBuilder.AddToolBarButton(Commands.SmoothTool);
 	ToolBarBuilder.AddToolBarButton(Commands.MeshTool);
 	ToolBarBuilder.AddToolBarButton(Commands.SphereTool);
-	
+
 	ToolBarBuilder.AddToolBarButton(Commands.FlattenTool);
 	ToolBarBuilder.AddToolBarButton(Commands.LevelTool);
 	ToolBarBuilder.AddToolBarButton(Commands.TrimTool);
@@ -335,7 +335,7 @@ void FVoxelEditorToolsPanel::CustomizeToolbar(FToolBarBuilder& ToolBarBuilder)
 
 	const auto NumericInterface = MakeShared<FVariablePrecisionNumericInterface>();
 
-	//  Brush Size 
+	//  Brush Size
 	{
 		FProperty* BrushRadiusProperty = UVoxelToolSharedConfig::StaticClass()->FindPropertyByName(GET_MEMBER_NAME_CHECKED(UVoxelToolSharedConfig, BrushSize));
 		const FString& UIMinString = BrushRadiusProperty->GetMetaData("UIMin");
@@ -351,7 +351,7 @@ void FVoxelEditorToolsPanel::CustomizeToolbar(FToolBarBuilder& ToolBarBuilder)
 			TTypeFromString<float>::FromString(SliderExponent, *SliderExponentString);
 		}
 
-		const auto SizeControl = 
+		const auto SizeControl =
 			SNew(SSpinBox<float>)
 			.Style(&FEditorStyle::Get().GetWidgetStyle<FSpinBoxStyle>("LandscapeEditor.SpinBox"))
 			.PreventThrottling(true)
@@ -379,6 +379,11 @@ void FVoxelEditorToolsPanel::AddReferencedObjects(FReferenceCollector& Collector
 	Collector.AddReferencedObject(ToolManager);
 }
 
+FString FVoxelEditorToolsPanel::GetReferencerName() const
+{
+	return ReferencerName;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
@@ -391,7 +396,7 @@ void FVoxelEditorToolsPanel::Tick(FEditorViewportClient* ViewportClient, float D
 {
 	auto* World = ViewportClient->GetWorld();
 	if (!ensure(World)) return;
-	
+
 	if (!LastWorld.IsValid())
 	{
 		// Toggle voxel worlds if none are created on first tick
@@ -415,7 +420,7 @@ void FVoxelEditorToolsPanel::Tick(FEditorViewportClient* ViewportClient, float D
 		ToggleVoxelWorld();
 	}
 	LastWorld = ViewportClient->GetWorld();
-	
+
 	if (ToolManager)
 	{
 		auto* Tool = ToolManager->GetActiveTool();
@@ -436,7 +441,7 @@ void FVoxelEditorToolsPanel::Tick(FEditorViewportClient* ViewportClient, float D
 					ViewportClient->Viewport->KeyState(EKeys::RightShift));
 
 				const bool bClick = ViewportClient->Viewport->KeyState(EKeys::LeftMouseButton);
-				
+
 				FVoxelToolTickData TickData;
 				{
 					auto* SceneViewport = static_cast<FSceneViewport*>(Viewport);
@@ -456,12 +461,12 @@ void FVoxelEditorToolsPanel::Tick(FEditorViewportClient* ViewportClient, float D
 					// Make sure to use the window scale factor and not the scale under the cursor,
 					// as the window DPI scale is uniform
 					MousePosition *= ViewportClient->GetDPIScale();
-					
+
 					TickData.MousePosition = FVector2D(MousePosition);
 					TickData.CameraViewDirection = SceneView->ViewMatrices.GetInvViewMatrix().TransformVector(FVector(0, 0, 1));
 					TickData.bEdit = bClick;
 					TickData.Keys = Keys;
-					
+
 					TickData.Axes.Add(FVoxelToolAxes::BrushSize, BrushSizeDelta);
 					TickData.Axes.Add(FVoxelToolAxes::Falloff, FalloffDelta);
 					TickData.Axes.Add(FVoxelToolAxes::Strength, StrengthDelta);
@@ -504,12 +509,12 @@ void FVoxelEditorToolsPanel::HandleClick(FEditorViewportClient* ViewportClient, 
 }
 
 bool FVoxelEditorToolsPanel::InputKey(FEditorViewportClient* ViewportClient, FViewport* Viewport, FKey Key, EInputEvent Event)
-{	
+{
 	if (Event != IE_Released && CommandList->ProcessCommandBindings(Key, FSlateApplication::Get().GetModifierKeys(), false/*Event == IE_Repeat*/))
 	{
 		return true;
 	}
-	
+
 	if (Key == EKeys::LeftMouseButton)
 	{
 		return true;
@@ -518,7 +523,7 @@ bool FVoxelEditorToolsPanel::InputKey(FEditorViewportClient* ViewportClient, FVi
 	{
 		return true;
 	}
-	else 
+	else
 	{
 		return false;
 	}
@@ -539,7 +544,7 @@ EVisibility FVoxelEditorToolsPanel::GetAddVoxelWorldVisibility() const
 	{
 		return EVisibility::Collapsed;
 	}
-	
+
 	for (auto* VoxelWorld : TActorRange<AVoxelWorld>(LastWorld.Get()))
 	{
 		return EVisibility::Collapsed;
@@ -580,7 +585,7 @@ bool FVoxelEditorToolsPanel::IsPropertyVisible(const FProperty& Property, const 
 	{
 		return false;
 	}
-	
+
 	if (Property.HasMetaData(STATIC_FNAME("PaintMaterial")))
 	{
 		auto* ActiveTool = ToolManager->GetActiveTool();
@@ -675,7 +680,7 @@ void FVoxelEditorToolsPanel::BuildToolBars(TArray<FToolBarBuilder>& OutToolBars,
 	AddTool(Commands.SurfaceTool, UVoxelSurfaceTool::StaticClass());
 	AddTool(Commands.RevertTool, UVoxelRevertTool::StaticClass());
 	AddTool(Commands.TrimTool, UVoxelTrimTool::StaticClass());
-	
+
 	GetToolBar().AddToolBarButton(Commands.SurfaceTool);
 	GetToolBar().AddToolBarButton(Commands.SmoothTool);
 	GetToolBar().AddToolBarButton(Commands.MeshTool);
@@ -685,7 +690,7 @@ void FVoxelEditorToolsPanel::BuildToolBars(TArray<FToolBarBuilder>& OutToolBars,
 	GetToolBar().AddToolBarButton(Commands.LevelTool);
 	GetToolBar().AddToolBarButton(Commands.TrimTool);
 	GetToolBar().AddToolBarButton(Commands.RevertTool);
-	
+
 	int32 NumCustomTools = 0;
 	const auto GetCustomToolBar = [&]()
 	{
@@ -696,7 +701,7 @@ void FVoxelEditorToolsPanel::BuildToolBars(TArray<FToolBarBuilder>& OutToolBars,
 		NumCustomTools++;
 		return OutCustomToolBars.Last();
 	};
-	
+
 	for (auto* Tool : ToolManager->GetTools())
 	{
 		auto* Class = Tool->GetClass();
@@ -714,7 +719,7 @@ void FVoxelEditorToolsPanel::BuildToolBars(TArray<FToolBarBuilder>& OutToolBars,
 			FSlateIcon("VoxelStyle", "VoxelTools.Surface"),
 			EUserInterfaceActionType::ToggleButton);
 	}
-	
+
 }
 
 void FVoxelEditorToolsPanel::BindCommands()
@@ -743,19 +748,19 @@ FSceneView* FVoxelEditorToolsPanel::GetSceneView(TUniquePtr<FSceneViewFamilyCont
 	}
 
 	FViewport* Viewport = ViewportClientForDeproject->Viewport;
-	
+
 	// Make sure we have a valid viewport, otherwise we won't be able to construct an FSceneView
 	if (!Viewport || Viewport->GetSizeXY().GetMin() <= 0)
 	{
 		return nullptr;
 	}
-	
+
 	ViewFamily = MakeUnique<FSceneViewFamilyContext>(FSceneViewFamily::ConstructionValues(
 		Viewport,
 		ViewportClientForDeproject->GetScene(),
 		ViewportClientForDeproject->EngineShowFlags)
 		.SetRealtimeUpdate(ViewportClientForDeproject->IsRealtime()));
-	
+
 	FSceneView* SceneView = ViewportClientForDeproject->CalcSceneView(ViewFamily.Get());
 	ensure(SceneView);
 	return SceneView;
