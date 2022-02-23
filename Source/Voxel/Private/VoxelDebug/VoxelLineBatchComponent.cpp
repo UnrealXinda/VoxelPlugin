@@ -92,7 +92,7 @@ void UVoxelLineBatchComponent::TickComponent(float DeltaTime, enum ELevelTick Ti
 void UVoxelLineBatchComponent::ApplyWorldOffset(const FVector& InOffset, bool bWorldShift)
 {
 	Super::ApplyWorldOffset(InOffset, bWorldShift);
-	
+
 	VOXEL_FUNCTION_COUNTER();
 
 	bool bDirty = false;
@@ -132,7 +132,7 @@ FPrimitiveSceneProxy* UVoxelLineBatchComponent::CreateSceneProxy()
 	{
 		return nullptr;
 	}
-	
+
 	return new FVoxelLineBatcherSceneProxy(this);
 }
 
@@ -233,7 +233,7 @@ void FVoxelLineBatcherSceneProxy::GetDynamicMeshElements(const TArray<const FSce
 			{
 				auto* SimpleCollector = static_cast<FSimpleElementCollector*>(PDI);
 				auto& BatchedElements = SimpleCollector->BatchedElements; // No support for depth priority; Would need to use TopBatchedElements
-				
+
 				// Reserve all for thick and not thick - we don't care about losing a bit of memory there
 				BatchedElements.AddReserveLines(Lines.Num(), false, false);
 				BatchedElements.AddReserveLines(Lines.Num(), false, true);
@@ -267,7 +267,7 @@ void FVoxelLineBatcherSceneProxy::GetDynamicMeshElements(const TArray<const FSce
 
 				for (int32 VertIdx = 0; VertIdx < Mesh.MeshVerts.Num(); ++VertIdx)
 				{
-					MeshBuilder.AddVertex(Mesh.MeshVerts[VertIdx], FVector2D::ZeroVector, PosX, PosY, PosZ, FColor::White);
+					MeshBuilder.AddVertex(Mesh.MeshVerts[VertIdx], FVector2f::ZeroVector, PosX, PosY, PosZ, FColor::White);
 				}
 				for (int32 Idx = 0; Idx < Mesh.MeshIndices.Num(); Idx += 3)
 				{

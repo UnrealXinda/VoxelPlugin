@@ -15,7 +15,7 @@ void FVoxelGeneratorPickerCustomization::CustomizeHeader(TSharedRef<IPropertyHan
 	const auto ClassHandle = PropertyHandle->GetChildHandle(GET_MEMBER_NAME_STATIC(FVoxelGeneratorPicker, Class));
 	const auto ObjectHandle = PropertyHandle->GetChildHandle(GET_MEMBER_NAME_STATIC(FVoxelGeneratorPicker, Object));
 	const auto TypeHandle = PropertyHandle->GetChildHandle(GET_MEMBER_NAME_STATIC(FVoxelGeneratorPicker, Type));
-	
+
 	ClassHandle->SetOnPropertyValueChanged(FVoxelEditorUtilities::MakeRefreshDelegate(CustomizationUtils));
 	ObjectHandle->SetOnPropertyValueChanged(FVoxelEditorUtilities::MakeRefreshDelegate(CustomizationUtils));
 	TypeHandle->SetOnPropertyValueChanged(FVoxelEditorUtilities::MakeRefreshDelegate(CustomizationUtils));
@@ -113,13 +113,13 @@ public:
 	const FString Name;
 	const TWeakObjectPtr<UObject> Object;
 	TArray<FName> PropertyNames;
-	
+
 	FVoxelGeneratorPickerCustomizationChildBuilder(const FString& Name, const TWeakObjectPtr<UObject>& Object)
 		: Name(Name)
 		, Object(Object)
 	{
 	}
-	
+
 	virtual void SetOnRebuildChildren(FSimpleDelegate InOnRegenerateChildren) override {}
 	virtual void GenerateHeaderRowContent(FDetailWidgetRow& NodeRow) override
 	{
@@ -134,7 +134,7 @@ public:
 	virtual void GenerateChildContent(IDetailChildrenBuilder& ChildrenBuilder) override
 	{
 		if (!ensure(Object.IsValid())) return;
-		
+
 		for (auto& PropertyName : PropertyNames)
 		{
 			if (ensure(Object->GetClass()->FindPropertyByName(PropertyName)))
@@ -152,6 +152,7 @@ public:
 
 void FVoxelGeneratorPickerCustomization::CustomizeChildren(TSharedRef<IPropertyHandle> PropertyHandle, IDetailChildrenBuilder& ChildBuilder, IPropertyTypeCustomizationUtils& CustomizationUtils)
 {
+	return;
 	// Important: Picker might actually be a FVoxelTransformableGeneratorPicker
 	// We CANNOT call GetInstance on it
 	FVoxelGeneratorPicker& Picker = GetPicker(*PropertyHandle);
@@ -188,7 +189,7 @@ void FVoxelGeneratorPickerCustomization::CustomizeChildren(TSharedRef<IPropertyH
 	TMap<FName, TArray<FVoxelGeneratorParameter>> CategoriesToParameters;
 	for (auto& Parameter : Parameters)
 	{
-		CategoriesToParameters.FindOrAdd(*Parameter.Category).Add(Parameter);	
+		CategoriesToParameters.FindOrAdd(*Parameter.Category).Add(Parameter);
 	}
 
 	CategoriesToParameters.KeySort([](const FName& A, const FName& B)
@@ -200,7 +201,7 @@ void FVoxelGeneratorPickerCustomization::CustomizeChildren(TSharedRef<IPropertyH
 		}
 		return A.LexicalLess(B);
 	});
-	
+
 	UVoxelGeneratorPickerEditorData* EditorData = Cast<UVoxelGeneratorPickerEditorData>(Picker.EditorData);
 	if (!EditorData ||
 		!ensure(EditorData->Blueprint) ||
@@ -217,11 +218,11 @@ void FVoxelGeneratorPickerCustomization::CustomizeChildren(TSharedRef<IPropertyH
 				// Pool blueprints, as we can't have a BP deleted before its class
 				BlueprintPool.Add(EditorData->Blueprint);
 			}
-			if (EditorData->BlueprintInstance) 
+			if (EditorData->BlueprintInstance)
 			{
 				EditorData->BlueprintInstance->MarkPendingKill();
 			}
-			
+
 			EditorData->GeneratorObject = nullptr;
 			EditorData->Parameters = {};
 			EditorData->Blueprint = nullptr;
@@ -242,10 +243,10 @@ void FVoxelGeneratorPickerCustomization::CustomizeChildren(TSharedRef<IPropertyH
 		{
 			Blueprint = NewObject<UBlueprint>(GetTransientPackage(), NAME_None, RF_Transient);
 		}
-		
+
 		Blueprint->NewVariables.Reset();
 		FBlueprintEditorUtils::RemoveGeneratedClasses(Blueprint);
-		
+
 		{
 			Blueprint->ParentClass = UObject::StaticClass();
 
@@ -298,7 +299,7 @@ void FVoxelGeneratorPickerCustomization::CustomizeChildren(TSharedRef<IPropertyH
 	}
 
 	auto* BlueprintInstance = EditorData->BlueprintInstance;
-	
+
 	// Apply the overrides
 	for (TFieldIterator<FProperty> It(BlueprintInstance->GetClass()); It; ++It)
 	{
@@ -309,8 +310,8 @@ void FVoxelGeneratorPickerCustomization::CustomizeChildren(TSharedRef<IPropertyH
 
 		Property->ImportText(**Value, It->ContainerPtrToValuePtr<void>(BlueprintInstance), PPF_None, BlueprintInstance);
 	}
-	
-	FCoreUObjectDelegates::OnObjectPropertyChanged.Add(MakeWeakPtrDelegate(PropertyHandle, 
+
+	FCoreUObjectDelegates::OnObjectPropertyChanged.Add(MakeWeakPtrDelegate(PropertyHandle,
 	[=, &Picker, Handle = &PropertyHandle.Get()](UObject* InObject, FPropertyChangedEvent& PropertyChangedEvent)
 	{
 		if (BlueprintInstance != InObject) return;
@@ -330,11 +331,11 @@ void FVoxelGeneratorPickerCustomization::CustomizeChildren(TSharedRef<IPropertyH
 		{
 			return;
 		}
-		
+
 		FScopedTransaction Transaction(TEXT("VoxelGeneratorParameters"), VOXEL_LOCTEXT("Edit Generator Parameters"), BlueprintInstance);
 
 		Handle->NotifyPreChange();
-		
+
 		for (TFieldIterator<FProperty> It(BlueprintInstance->GetClass()); It; ++It)
 		{
 			auto* Property = *It;
@@ -357,10 +358,10 @@ void FVoxelGeneratorPickerCustomization::CustomizeChildren(TSharedRef<IPropertyH
 
 		Handle->NotifyPostChange(EPropertyChangeType::Unspecified);
 	}));
-	
+
 	{
 		const auto ButtonHBox = SNew(SHorizontalBox);
-		
+
 		ChildBuilder.AddCustomRow({})
 		.ValueContent()
 		.HAlign(HAlign_Fill)
@@ -415,7 +416,7 @@ void FVoxelGeneratorPickerCustomization::CustomizeChildren(TSharedRef<IPropertyH
 					}
 					PropertyHandle->NotifyPostChange(EPropertyChangeType::ValueSet);
 				}
-				
+
 				if (auto Pinned = Utilities.Pin()) Pinned->ForceRefresh();
 				return FReply::Handled();
 			})
@@ -425,7 +426,7 @@ void FVoxelGeneratorPickerCustomization::CustomizeChildren(TSharedRef<IPropertyH
 				.Text(VOXEL_LOCTEXT("Clear"))
 			]
 		];
-		
+
 		if (Picker.IsObject())
 		{
 			ButtonHBox->AddSlot()
@@ -504,7 +505,7 @@ FVoxelGeneratorPicker& FVoxelGeneratorPickerCustomization::GetPicker(IPropertyHa
 		static FVoxelGeneratorPicker Static;
 		return Static;
 	}
-	
+
 	return *static_cast<FVoxelGeneratorPicker*>(Address);
 }
 
@@ -549,7 +550,7 @@ FEdGraphTerminalType FVoxelGeneratorPickerCustomization::GetParameterTerminalPin
 		Result.TerminalSubCategoryObject = TerminalSubCategoryObject;
 		return Result;
 	};
-	
+
 	switch (ParameterType.PropertyType)
 	{
 	default: ensure(false); return FEdGraphTerminalType();

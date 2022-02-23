@@ -70,21 +70,21 @@ static void GetMergedSectionFromStaticMesh(
 			UVs.SetNumUninitialized(StaticMeshVertexBuffer.GetNumVertices());
 			for (uint32 Index = 0; Index < StaticMeshVertexBuffer.GetNumVertices(); Index++)
 			{
-				Get(UVs, Index) = StaticMeshVertexBuffer.GetVertexUV(Index, 0);
+				Get(UVs, Index) = FVector2D{StaticMeshVertexBuffer.GetVertexUV(Index, 0)};
 			}
 		}
 	}
 	else
 	{
 		LOG_VOXEL(Log, TEXT("Extracting mesh data from GPU for %s"), *InMesh->GetName());
-		
+
 		ENQUEUE_RENDER_COMMAND(VoxelDistanceFieldCompute)([&](FRHICommandListImmediate& RHICmdList)
 		{
 			{
 				VOXEL_SCOPE_COUNTER("Copy Vertices from GPU");
 				Vertices.SetNumUninitialized(PositionVertexBuffer.GetNumVertices());
 				const int32 NumBytes = PositionVertexBuffer.GetNumVertices() * PositionVertexBuffer.GetStride();
-				
+
 				void* BufferData = RHICmdList.LockVertexBuffer(PositionVertexBuffer.VertexBufferRHI, 0, NumBytes, EResourceLockMode::RLM_ReadOnly);
 				FMemory::Memcpy(Vertices.GetData(), BufferData, NumBytes);
 				RHICmdList.UnlockVertexBuffer(PositionVertexBuffer.VertexBufferRHI);

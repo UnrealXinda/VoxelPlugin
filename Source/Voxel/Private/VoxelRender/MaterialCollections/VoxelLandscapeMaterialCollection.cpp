@@ -366,6 +366,7 @@ void UVoxelLandscapeMaterialCollection::ForeachMaterialParameter(TFunctionRef<vo
 	TArray<FGuid> Guids;
 
 	// TODO: these functions are no longer available in UE5
+	ActualMaterial->GetAllParameterInfoOfType(EMaterialParameterType::Scalar, ParameterInfos, Guids);
 	// ActualMaterial->GetAllParameterInfo<UMaterialExpressionLandscapeLayerWeight>(ParameterInfos, Guids);
 	// ActualMaterial->GetAllParameterInfo<UMaterialExpressionLandscapeLayerSwitch>(ParameterInfos, Guids);
 	// ActualMaterial->GetAllParameterInfo<UMaterialExpressionLandscapeLayerSample>(ParameterInfos, Guids);

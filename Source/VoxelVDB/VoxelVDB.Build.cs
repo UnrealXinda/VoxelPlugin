@@ -28,12 +28,18 @@ public class VoxelVDB : ModuleRules
             new string[]
             {
                 "Voxel",
-                "OpenVDB",
                 "UEOpenExr",
                 "Core",
                 "CoreUObject",
                 "Engine"
             }
+        );
+
+        AddEngineThirdPartyPrivateStaticDependencies(Target,
+            "IntelTBB",
+            "UVAtlas",
+            "DirectXMesh",
+            "OpenVDB"
         );
     }
 }

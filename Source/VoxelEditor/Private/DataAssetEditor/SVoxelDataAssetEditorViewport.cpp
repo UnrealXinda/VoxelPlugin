@@ -8,6 +8,7 @@
 #include "SEditorViewport.h"
 #include "AdvancedPreviewScene.h"
 #include "EditorViewportClient.h"
+#include "STransformViewportToolbar.h"
 #include "Slate/SceneViewport.h"
 #include "Widgets/Docking/SDockTab.h"
 #include "VoxelDataAssetEditorCommands.h"
@@ -44,14 +45,14 @@ void SVoxelDataAssetEditorViewport::Construct(const FArguments& InArgs)
 	DataAssetEditor = InArgs._Editor;
 	check(DataAssetEditor);
 	AdvancedPreviewScene = &DataAssetEditor->GetPreviewScene();
-	
+
 	SEditorViewport::Construct( SEditorViewport::FArguments() );
 }
 
 SVoxelDataAssetEditorViewport::~SVoxelDataAssetEditorViewport()
 {
 	UAssetViewerSettings::Get()->OnAssetViewerSettingsChanged().RemoveAll(this);
-	
+
 	if (EditorViewportClient.IsValid())
 	{
 		EditorViewportClient->Viewport = nullptr;
@@ -131,15 +132,15 @@ TSharedPtr<FExtender> SVoxelDataAssetEditorViewport::GetExtenders() const
 	return MakeShared<FExtender>();
 }
 
-TSharedRef<FEditorViewportClient> SVoxelDataAssetEditorViewport::MakeEditorViewportClient() 
+TSharedRef<FEditorViewportClient> SVoxelDataAssetEditorViewport::MakeEditorViewportClient()
 {
 	EditorViewportClient = FVoxelDataAssetEditorViewportClient::Create(
 		DataAssetEditor->GetVoxelWorld(),
 		DataAssetEditor->GetDataAsset(),
 		DataAssetEditor->GetPanel(),
-		*AdvancedPreviewScene, 
+		*AdvancedPreviewScene,
 		*this);
-	
+
 	EditorViewportClient->VisibilityDelegate.BindSP(this, &SVoxelDataAssetEditorViewport::IsVisible);
 
 	return EditorViewportClient.ToSharedRef();
@@ -150,6 +151,19 @@ void SVoxelDataAssetEditorViewport::PopulateViewportOverlays(TSharedRef<class SO
 	Overlay->AddSlot()
 	.VAlign(VAlign_Top)
 	[
-		SNew(SVoxelDataAssetEditorViewportToolBar, SharedThis(this))
+		SNew(SHorizontalBox)
+		+SHorizontalBox::Slot()
+		.HAlign(HAlign_Left)
+		[
+			SNew(SVoxelDataAssetEditorViewportToolBar, SharedThis(this))
+		]
+
+		+SHorizontalBox::Slot()
+		.HAlign(HAlign_Right)
+		[
+			SNew(STransformViewportToolBar)
+			.Viewport(SharedThis(this))
+			.CommandList(GetCommandList())
+		]
 	];
 }
